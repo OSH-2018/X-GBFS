@@ -1,0 +1,108 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{graphicx}
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+\title{
+  \normalfont \normalsize 
+  \textsc{\\~\\~\\~\\~\\~\\University of Science and Technology of China} \\ [25pt] % Your university, school and/or department name(s)
+  \horrule{2pt} \\[0.5cm] % Thin top horizontal rule
+  \huge GBFS\footnote{Graph Based File System} 图文件系统 \\ % The assignment title
+  \huge 可行性报告 \\
+  \horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+\newcommand{\n}{\\\indent}
+\author{\Large{丁峰~~~~牛田~~~~谢灵江~~~~张立夫} \footnote{丁峰~:~PB16110386~~~~牛田~:~PB15010419~~~~谢灵江~:~PB16111096~~~~张立夫~:~PB15020718}
+\setcounter{footnote}{-1}
+}
+\date{\today}
+
+\begin{document}
+\maketitle
+\clearpage
+\tableofcontents
+\clearpage
+
+\section{理论依据}
+要创作一个图文件系统（GBFS），首先需要对文件之间的关系进行处理。显然，处理文件之间的关系依据是文件的内容以及它们的属性，例如考察哪些文件有相同的所有者，内容的相似性有多大。经过调研，发现若直接以文件为结点，并将有关联的文件相连来构造一个图，并在图上进行必要的操作的方案过于复杂，而且效率低下。因此，我们考虑使用评价较好的图形数据库Neo4j帮助我们完成这一工作。在这里，我们将文件看成结点，文件之间的关系看作边，由此可以构造出一个图。
+
+图论与有向加权图：一个图由若干点和连接它们的边构成。有向加权图是由若干点和连接它们的有向加权边组成的。图文件系统所要实现的目标就是把一个个文件当作结点，把文件之间的亲疏关系用加权无向边表示。文件之间关系越紧密，那么这两个文件之间的边权越大。
+
+我们可以通过比较文件属性来确定文件之间的关系，在图数据库中建立文件的图模型，并最终以图结构的形式显示出来。除此之外，还可以利用机器学习相关知识，用机器学习的方法预测用户的行为，根据用户打开一个文件前后打开的其他文件的统计结果，计算得到文件之间的关系，进而更新图数据库中文件之间的边权关系。
+
+\section{技术依据}
+\subsection{实现概论}
+首先我们需要实现一个FUSE，与内核中的VFS接口相配，然后FUSE需要将Neo4j封装，因为我们需要使用Neo4j数据库来查看、增加、删除文件之间的关系，并且将FUSE中与文件有关的操作，例如read()，open()与数据库中的操作结合起来，最终实现的目标是，能在Neo4j的浏览器中能清楚地看到文件之间的各种联系，而FUSE对文件进行的创建、更改、删除等操作也可以及时地反馈到数据库中。
+
+\subsection{Neo4j}
+Neo4j是流行的图形数据库之一。 Neo4j是用Java语言编写的。在Neo4j中，使用的是具有标签属性的图模型（The Labeled Property Graph Model），它存储着四类事物：节点、关系、属性、标签。其中，节点是主要的数据元素，节点之间通过关系相连。标签用于将节点分成组。关系可以具有一个或多个属性，而属性是基本值，就是一个字符串，属性可以被索引和约束，如下图：
+
+\begin{figure}[htbp]
+\centering\includegraphics[width=3.7in]{1.png}
+\caption{节点关系属性}
+\end{figure}
+
+Neo4j的浏览器是一个很棒的可视化工具，主要应用于程序和数据库开发。 当用户需要可视化开发的结果时，只要给出链接分析(link analysis)或详细依赖关系(detailed dependency)，就可以使用各种强大的图形可视化工具。效果如图：
+
+\begin{figure}[htbp]
+\centering\includegraphics[width=3.7in]{2.png}
+\caption{Neo4j GUI 界面}
+\end{figure}
+
+Neo4j提供了包含很多图形算法的开放库，可以被Cypher写的程序调用，此库可以在Neo4j Desktop中安装。库中的高性能算法已经被优化过，有非常高的效率，这些算法在必要时可以帮助我们发掘隐藏在数据背后的信息，还有助于提高用户的体验。例如，求最短路径算法或者评价访问路径的效果算法，这些算法通常用于查找文件。
+
+Cypher是一种图形查询语言，在语言中可以直接将节点，关系和属性描述为ASCII字符串，使查询、读取和识别更容易实现。在Neo4j图形平台上，我们将使用该语言将文件信息输入到Neo4j数据库中。当机器学习部分内容完成后，也可以将学习后得到的文件的边权关系放入数据库中。
+
+\section{FUSE (Filesystem in Userspace)}
+
+虚拟文件系统VFS作为内核子系统，为用户空间程序提供了文件和文件系统相关的接口，系统中的文件系统依赖VFS共存，而且也依靠VFS进行协同工作。VFS的存在使得直接使用系统调用而无需考虑具体文件系统和实际物理介质，新的文件系统和新类型的存储介质在进入linux时程序无需重写甚至无须重新编译。
+
+构建文件系统是一件复杂的工作，在FUSE出现之前，Linux中的文件系统都实现在内核态，编写新的特定功能的文件系统十分繁琐，代码编写和调试都很不方便，就算是仅仅在传统文件系统中添加一个小小的功能，只是因为在内核中实现就要做很大的工作量。在Linux2.6之后的内核中增加了FUSE的支持之后，工作量就大大减少了。编写FUSE文件系统时，只需要内核加载了FUZE内核模块即可，无需重新编译内核。
+
+FUSE（用户态文件系统）是一个实现在用户空间的文件系统框架，通过FUSE内核模块的支持，使用者只需要根据fuse提供的接口实现具体的文件操作就可以实现一个文件系统。 
+
+我们可以通过FUSE的组成来分析FUSE的工作原理——fuse主要由三部分组成：FUSE内核模块、用户空间库libfuse以及挂载工具fusermount。
+
+
+\begin{itemize}
+  \item fuse内核模块：实现了和VFS的对接，实现了一个能被用户空间进程打开的设备，当VFS发来文件操作请求之后，将请求转化为特定格式，并通过设备传递给用户空间进程，用户空间进程在处理完请求后，将结果返回给fuse内核模块，内核模块再将其还原为Linux kernel需要的格式，并返回给VFS；
+  \item fuse库libfuse：负责和内核空间通信，接收来自/dev/fuse的请求，并将其转化为一系列的函数调用，将结果写回到/dev/fuse；提供的函数可以对fuse文件系统进行挂载卸载、从linux内核读取请求以及发送响应到内核。libfuse提供了两个API：一个“high-level”同步API 和一个“low-level” 异步API 。这两种API 都从内核接收请求传递到主程序（fuse\_main函数），主程序使用相应的回调函数进行处理。当使用high-level API时，回调函数使用文件名（file names）和路径（paths）工作，而不是索引节点inodes，回调函数返回时也就是一个请求处理的完成。使用low-level API 时，回调函数必须使用索引节点inode工作，响应发送必须显示的使用一套单独的API函数；
+\item 挂载工具：实现对用户态文件系统的挂载。
+\end{itemize}
+
+\begin{figure}[htbp]
+\centering\includegraphics[width=3.5in]{3.png}
+\caption{FUSE工作流程图}
+\end{figure}
+
+在用户空间写文件系统代码的优势？
+
+\begin{itemize}
+  \item 稳定性：文件系统文档接口
+  \item 兼容性：在多个文件系统上运行成为可能
+    \subitem for Linux/*BSD/OpenSolaris/MacOSX
+  \item 所有用户空间的API 都可以与文件系统的代码相容:
+    \subitem Write a filesystem in Perl, Java, …
+    \subitem Debug filesystem using userspace tools
+    \subitem Cache management: just let mmap() do it
+  \item 系统更加安全
+    \subitem Filesystem as unprivileged user process/daemon
+  \item 系统更加稳定
+    \subitem Crashing filesystems don't crash the kernel
+    \subitem Hanging filesystem code can simply be killed
+    \subitem Greedy file systems can be resource-controlled
+\end{itemize}
+
+在实现FUSE过程中，重点需要实现一些文件的基本操作函数，如readdir、open、write、close等操作，并要将Neo4j中的文件结点和边结合，即对权重较大的边，考虑对相关的文件进行预处理操作。比如，通过机器学习和文件相关性发现，用户在打开了文件A后，有很大的概率会修改文件B，那么在用户打开了文件A后，文件系统根据数据库提供的信息可以对文件B进行预处理，加快用户对文件B的相关操作。
+
+
+\section{创新点}
+\paragraph{1} 使用FUSE，在用户态即可定制文件系统，无需进行复杂的内核操作。使用FUSE具有稳定性、兼容性的优势，还可以使系统更加安全。由于文件系统在用户态实现，因此具有跨平台的优势。
+
+\paragraph{2} 利用强大的关系数据库来处理文件之间复杂的联系，相比于其他的数据库文件系统，使用专门的关系数据库neo4j可以更好的管理文件之间的关联。
+
+\paragraph{3} 相比起以往更注重工作性能的文件系统和图数据库的利用来说，我们这次的工作是在结合两者进行用户交互体验的提升，而并非加速。对于很多用户来说，计算机工作速度的小幅改变或许微不足道，但是操作的便捷与流畅性是清晰可见的。
+
+
+\begin{thebibliography}{99}
+\bibitem{} https://neo4j.com/
+\bibitem{} http://www.oug.org/files/presentations/losug-fuse.pdf
+\end{document}
