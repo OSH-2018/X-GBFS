@@ -35,6 +35,9 @@ class Shell:
                     exit(1)
                 filepath = os.path.abspath(os.curdir) + '/' + filename
                 label = self.matchpath(filepath)
+                if label == []:
+                    print('Wrong Input')
+                    exit(1)
                 label = label[0]
                 strlabel = str(label)
                 strlabel = strlabel.split(' ')
@@ -56,6 +59,9 @@ class Shell:
                 filename = arg
                 filepath = os.path.abspath(os.curdir) + '/' + filename
                 nodes = self.matchpath(filepath)
+                if nodes == []:
+                    print('Wrong Input')
+                    exit(1)
                 nodes = nodes[0]
                 strlabel = str(nodes)
                 strlabel = strlabel.split(' ')
@@ -86,7 +92,10 @@ class Shell:
                 filename = arg
                 filepath = os.path.abspath(os.curdir) + '/' + filename
                 nodes = self.matchpath(filepath)
-                nodes = nodes[0]                    # 要进行判断是否存在
+                if nodes == []:
+                    print('Wrong Input')
+                    exit(1)
+                nodes = nodes[0]
                 graph = Graph(password='zhanglifu')
                 for label in args:
                     nodes.add_label(label)
@@ -107,7 +116,11 @@ class Shell:
                 filename = arg
                 filepath = os.path.abspath(os.curdir) + '/' + filename
                 nodes = self.matchpath(filepath)
+                if nodes == []:
+                    print('Wrong Input')
+                    exit(1)
                 nodes = nodes[0]
+                print(nodes)
                 graph = Graph(password='zhanglifu')
                 for label in args:
                     nodes.remove_label(label)
@@ -115,7 +128,7 @@ class Shell:
                     rels = self.matchrel(nodes, label)
                     print(rels)
                     for rel in rels:
-                        graph.delete(rel)
+                        graph.separate(rel)
                 print('Label delete successfully! (if it exists)')
 
 
