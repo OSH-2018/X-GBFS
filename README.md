@@ -35,10 +35,24 @@
 
 ## API
 
-1. Socket：（待定）
+1. Socket：
+
+   ​	socket打包发送给server.py 每个包固定大小100,内容之间以逗号隔开	
+
+   ​	创建文件时 首先会发出Create 然后是文件路径及其名，文件后缀，uid, atime, mtime, ctime
+
+   ​	读文件时，发出Read和atime
+
+   ​	重命名时，发出Rename，新的文件路径和文件名，文件后缀，新的ctime
+
+   ​	删除文件时，发出Unlink，文件的路径和文件名
+
+   ​	转换所有者时，发出Chown，文件的路径和文件名，新的uid，新的ctime
+
 2. `GetProperty.py` ：
    - input: (str) filename
    - output: (list) key, (list) value（其中序号一一对应）
+
 3. `Recommend.py` ：
    - `def shell()` :
      - input: (str) path
