@@ -2,23 +2,40 @@ import sys, getopt, os
 from py2neo import Node, Graph, NodeMatcher, Relationship, RelationshipMatcher
 
 class Shell:
+    graph = Graph(password='zhanglifu')
+
     def matchpath(self, filepath):
-        graph = Graph(password='zhanglifu')
-        matcher = NodeMatcher(graph)
+        matcher = NodeMatcher(self.graph)
         result = list(matcher.match(path=filepath))
         return result
 
     def matchlabel(self, label):
-        graph = Graph(password='zhanglifu')
-        matcher = NodeMatcher(graph)
+        matcher = NodeMatcher(self.graph)
         result = list(matcher.match(label))
         return result
 
     def matchrel(self, node, label):
-        graph = Graph(password='zhanglifu')
-        matcher = RelationshipMatcher(graph)
+        matcher = RelationshipMatcher(self.graph)
         result = list(matcher.match({node}, label))
         return result
+
+    def matchper(self, key, value):
+        if key == 'name':
+            result = list(self.graph.nodes.match(name=value))
+        elif key == 'path':
+            result = list(self.graph.nodes.match(path=value))
+        elif key == 'ext':
+            result = list(self.graph.nodes.match(ext=value))
+        else:
+            result = 0
+        return result
+
+    def getlabel(self, label):
+        strlabel = str(label)
+        strlabel = strlabel.split(' ')
+        strlabel = strlabel[0].split(':')
+        strlabel = strlabel[1:]
+        return strlabel
 
     def test(self, argv):
         try:
@@ -39,17 +56,17 @@ class Shell:
                     print('Wrong Input')
                     exit(1)
                 label = label[0]
-                strlabel = str(label)
-                strlabel = strlabel.split(' ')
-                strlabel = strlabel[0].split(':')
-                strlabel = strlabel[1:]
+                strlabel = self.getlabel(label)
                 print('Labels:')
                 for i in strlabel:
-                    print(i)
+                    print('\t', i)
                 print('Properties:')
-                print('name: ', label['name'])
-                print('path: ', label['path'])
-                print('like: ', label['like'])
+                print('\tname:  ', label['name'])
+                print('\tpath:  ', label['path'])
+                print('\text:   ', label['like'])
+                print('\tctime: ', label['ctime'])
+                print('\tmtime: ', label['mtime'])
+                print('\tatime: ', label['atime'])
 
 
             elif opt in ('-l', '--showlink'):
@@ -74,7 +91,7 @@ class Shell:
                     for node in linknodes:
                         if node['path'] == filepath:
                             continue
-                        print('\t', j, '. path: ', node['path'])
+                        print('\t', str(j) + '.', 'path: ', node['path'])
                         j += 1
                 
 
@@ -96,20 +113,19 @@ class Shell:
                     print('Wrong Input')
                     exit(1)
                 nodes = nodes[0]
-                graph = Graph(password='zhanglifu')
                 for label in args:
                     nodes.add_label(label)
-                    graph.push(nodes)
+                    self.graph.push(nodes)
                     linknodes = self.matchlabel(label)
                     for node in linknodes:
                         if node['path'] == filepath:
                             continue
                         r = Relationship(nodes, label, node)
-                        graph.create(r)
+                        self.graph.create(r)
                 print('Label add successfully!')
 
 
-            elif opt in ('-d', '--delete'):     # 存在问题：会删掉所有边和节点
+            elif opt in ('-d', '--delete'):    
                 if args == []:
                     print('Wrong Input')
                     exit(1)
@@ -120,20 +136,58 @@ class Shell:
                     print('Wrong Input')
                     exit(1)
                 nodes = nodes[0]
-                print(nodes)
-                graph = Graph(password='zhanglifu')
                 for label in args:
                     nodes.remove_label(label)
-                    graph.push(nodes)
+                    self.graph.push(nodes)
                     rels = self.matchrel(nodes, label)
                     print(rels)
                     for rel in rels:
-                        graph.separate(rel)
+                        self.graph.separate(rel)
                 print('Label delete successfully! (if it exists)')
 
 
             elif opt in ('-f', '--find'):
-                print('find')
+                label = arg.split(':')
+                if len(label) == 2:
+                    nodes = self.matchper(label[0], label[1])
+                    if nodes == 0:
+                        print('Wrong Property')
+                        exit(1)
+                elif len(label) == 1:
+                    nodes = self.matchlabel(label[0])
+                else:
+                    print('Wrong Input(too many properties)')
+                    exit(1)
+                if args != []:
+                    for i in range(len(args)):
+                        nodeslen = len(nodes)
+                        if nodeslen == 0:
+                            break
+                        label = args[i].split(':')
+                        for j in range(nodeslen):
+                            node = nodes.pop(0)
+                            if len(label) == 2:
+                                if node[label[0]] == label[1]:
+                                    nodes.append(node)
+                                else:
+                                    continue
+                            elif len(label) == 1:
+                                labels = self.getlabel(node)
+                                if labels.count(label[0]) == 1:
+                                    nodes.append(node)
+                                else:
+                                    continue
+                if nodes == []:
+                    print('Not Found')
+                    exit(1)
+                else:
+                    j = 0
+                    for node in nodes:
+                        print(str(j + 1) + '.', 'name:', node['name'], '  path:', node['path'])
+                        j += 1
+
+
+                
             else:
                 print("this is help")
 
