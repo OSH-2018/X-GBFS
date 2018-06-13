@@ -3,7 +3,7 @@ import urllib
 import urllib.request
 import urllib.error
 import json
-def GP(sta):
+def getproperty(sta):
     L=[]
     url1 = "http://shuyantech.com/api/cndbpedia/ment2ent?q="+urllib.parse.quote(sta)  
     req1 = urllib.request.Request(url1)
@@ -53,4 +53,4 @@ def GP(sta):
     #        return(result['ret'])
 
 st = input()
-GP(st)
+getproperty(st)
