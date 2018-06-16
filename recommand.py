@@ -80,3 +80,48 @@ class Recommand:
         target_path =  target_path[1]
         #os.getcwd# 获取当前工作目录
         os.chdir(target_path)# 转到了目标目录
+    
+    
+    
+    def server(self, filepath):
+        input_node = self.matchpath(filepath)
+        strlabel = str(input_node)
+        strlabel = strlabel.split(' ')
+        strlabel = strlabel[0].split(':')
+        strlabel = strlabel[1:]
+        relation_list = []
+        for label in strlabel:
+            rel_list = self.matchrel(input_node, label)
+            relation_list.extend(rel_list)# 所有的关系
+        weight_list = []
+        for rel in relation_list:
+            weight_list.append(rel['weight'])# 提取weight
+        # 将weight提取成一个list进行后续操作
+        n = 5
+        index_list = []
+        while n > 0:
+            index = weight_list.index(max(weight_list))
+            index_list.append(index)
+            weight_list[index] = 0
+            n = n - 1
+        m = 0
+        relation_top5_list = []
+        while m < 5:
+            relation_top5_list.append(relation_list[index_list[m]])
+            m = m + 1
+        # 得到了相关性最大的5个节点与输入节点之间的关系，通过该关系调用.nodes()可以返
+        # 回这5个节点
+        Neighbor_list = []
+        for relation in relation_top5_list:
+            Neighbor_nodes = relation.nodes
+            Neighbor_node0 = Neighbor_nodes[0]
+            Neighbor_node1 = Neighbor_nodes[1]
+            if Neighbor_node0 == input_node:
+                Neighbor_list.append(str(Neighbor_node1))
+            else:
+                Neighbor_list.append(str(Neighbor_node0))
+        path_list = []# 用于存储5个关系最大的节点的"path"属性
+        for nodes in Neighbor_list:
+            path_list.append(nodes['path'])
+        return path_list
+        
