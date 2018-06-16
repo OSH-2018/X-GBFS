@@ -9,7 +9,7 @@ import os, sys, getopt
 #>>>os.getcwd()
 
 class Recommand:
-    graph = Graph(password='neo4j')
+    graph = Graph(password='zhanglifu')
     def matchpath(self, filepath):
         matcher = NodeMatcher(self.graph)
         result = list(matcher.match(path=filepath))

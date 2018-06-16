@@ -66,6 +66,9 @@ class Server:
         
         elif op[0] == 'Open':
             nodes = self.matchper('path', op[1])
+            if nodes == []:
+                print('Wrong op')
+                return
             opentime = time.mktime(time.strptime(op[2], '%a %b %d %H:%M:%S %Y'))
             print('filedict: ', filedict)
             if abs(filedict['time'] - opentime) < 100:
