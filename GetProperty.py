@@ -14,7 +14,11 @@ def getproperty(sta):
         L.append(e.reason)
         print(L)
         return L
-    
+    except Exception as ex:
+        L.append(str(ex))
+        print(L)
+        return L
+
     result1 = response1.read().decode()
     result1 = json.loads(result1)    
     if(result1['status'] != 'ok'):
@@ -36,6 +40,10 @@ def getproperty(sta):
         response2 = urllib.request.urlopen(req2,timeout = 5)
     except urllib.error.URLError as e:
         L.append(e.reason)
+        print(L)
+        return L
+    except Exception as ex:
+        L.append(str(ex))
         print(L)
         return L
         
@@ -65,3 +73,5 @@ def getproperty(sta):
         print(L)
         return L
     #        return(result['ret'])
+#st = input()
+#getproperty(st)
