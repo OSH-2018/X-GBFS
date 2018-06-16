@@ -26,7 +26,7 @@ class Recommand:
         result = list(matcher.match(label))
         return result
 
-    def shell(self, filepath=None, index=1):
+    def shell(self, filepath=None):
         input_node = self.matchpath(filepath)
         strlabel = str(input_node)
         strlabel = strlabel.split(' ')
