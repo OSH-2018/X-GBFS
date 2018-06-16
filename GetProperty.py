@@ -5,6 +5,7 @@ import urllib.error
 import json
 def getproperty(sta):
     L=[]
+    sta = str.lower(sta)
     url1 = "http://shuyantech.com/api/cndbpedia/ment2ent?q="+urllib.parse.quote(sta)  
     req1 = urllib.request.Request(url1)
 
@@ -73,5 +74,5 @@ def getproperty(sta):
         print(L)
         return L
     #        return(result['ret'])
-#st = input()
-#getproperty(st)
+st = input()
+getproperty(st)
