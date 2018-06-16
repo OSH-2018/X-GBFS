@@ -116,7 +116,7 @@ class Recommand:
         # 接下来两个操作：
         # 1：更新权值weight
         i = 0
-        while i < 5:
+        while i < rel_num:
             if i == index:
                 if relation_top5_list[i]['weight'] == 10:
                     continue
