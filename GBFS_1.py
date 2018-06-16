@@ -28,7 +28,7 @@ except ImportError:
     print('failed to import fuse')
 
 def calculate(string):
-    l = len(string)
+    l = len(string.encode('utf-8'))
     num = (l+2) // 100
     zero = (num+1)*100-l-2
     return (num,zero)
@@ -159,8 +159,11 @@ class Passthrough(Operations):
         path_str = ",".join(path_list)
         fd = os.open(full_path, flags)
         atime = time2acs(os.fstat(fd).st_atime)
-        (num,zero) = calculate('Open,'+workpath+full_path+','+atime+','+path_str)
-        s.send((str(num)+','+'Open,'+workpath+full_path+','+atime+','+path_str+
+        ext_tuple = os.path.splitext(full_path)
+        if ext_tuple[1][1:3]=='sw' or not ext_tuple[1] or ext_tuple[1][-1]=='~':
+            return fd
+        (num,zero) = calculate('Open,'+workpath+full_path+','+atime+','+path_str+',')
+        s.send((str(num)+','+'Open,'+workpath+full_path+','+atime+','+path_str+','+
             '0'*zero).encode('utf-8'))
         return fd
 
@@ -200,12 +203,13 @@ class Passthrough(Operations):
             
 
     def read(self, path, length, offset, fh):
+        full_path = self._full_path(path)
         os.lseek(fh, offset, os.SEEK_SET)
         ret = os.read(fh, length)
         info = os.fstat(fh)
         atime = time2acs(info.st_atime)
-        (num,zero) = calculate('Read,'+workpath+path+','+atime+',')
-        s.send((str(num)+','+'Read,'+workpath+path+','+atime+','+'0'*zero).encode('utf-8'))
+        (num,zero) = calculate('Read,'+workpath+full_path+','+atime+',')
+        s.send((str(num)+','+'Read,'+workpath+full_path+','+atime+','+'0'*zero).encode('utf-8'))
         return ret 
 
     def write(self, path, buf, offset, fh):
@@ -230,6 +234,7 @@ class Passthrough(Operations):
 def main(mountpoint, root):
     global s
     global workpath
+    
     workpath = os.getcwd()+'/'
     address = 'GBFS_Socket'
     s = socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
