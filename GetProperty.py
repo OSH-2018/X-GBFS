@@ -9,14 +9,12 @@ def getproperty(sta):
     req1 = urllib.request.Request(url1)
 
     try:
-        urllib.request.urlopen(req1)
+        response1 = urllib.request.urlopen(req1,timeout = 5)
     except urllib.error.URLError as e:
         L.append(e.reason)
         print(L)
         return L
 
-    
-    response1 = urllib.request.urlopen(req1)
     result1 = response1.read().decode()
     result1 = json.loads(result1)    
     if(result1['status'] != 'ok'):
@@ -33,7 +31,14 @@ def getproperty(sta):
 
     url2 = "http://shuyantech.com/api/cndbpedia/avpair?q="+urllib.parse.quote(stb)  
     req2 = urllib.request.Request(url2)
-    response2 = urllib.request.urlopen(req2)
+
+    try:
+        response2 = urllib.request.urlopen(req2,timeout = 5)
+    except urllib.error.URLError as e:
+        L.append(e.reason)
+        print(L)
+        return L
+        
     result2 = response2.read().decode()
     result2 = json.loads(result2)    
     if(result2['status'] != 'ok'):
@@ -43,9 +48,18 @@ def getproperty(sta):
     else:
         L.append('OK')
         i=1
+        Lvalue=[]
         for string in result2['ret'] :
             if( i > 3  or string[0]=='DESC' ):
                 break
+            flag = 0
+            for value in Lvalue:
+                if(string[1]==value):
+                    flag = 1
+                    break 
+            if(flag):
+                continue
+            Lvalue.append(string[1])
             L.append(string[1])
             i=i+1
         print(L)
