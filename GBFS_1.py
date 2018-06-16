@@ -67,8 +67,8 @@ class Passthrough(Operations):
         ctime = time2acs(os.stat(full_path).st_ctime)
         if name_tuple[1][1:3]=='sw' or not name_tuple[1] or name_tuple[1][-1]=='~':
             return os.chown(full_path, uid, gid)
-        (num,zero) = calculate('Chown,'+full_path+','+str(uid)+','+ctime+',')
-        s.send((str(num)+','+'Chown,'+full_path+','+
+        (num,zero) = calculate('Chown,'+workpath+full_path+','+str(uid)+','+ctime+',')
+        s.send((str(num)+','+'Chown,'+workpath+full_path+','+
             str(uid)+','+ctime+','+'0'*zero).encode('utf-8'))
         return os.chown(full_path, uid, gid)
 
@@ -117,8 +117,8 @@ class Passthrough(Operations):
         name_tuple = os.path.splitext(unlinkpath)
         if name_tuple[1][1:3]=='sw' or not name_tuple[1] or name_tuple[1][-1]=='~':
             return os.unlink(unlinkpath)
-        (num,zero) = calculate('Unlink,'+unlinkpath+',')
-        s.send((str(num)+','+'Unlink,'+unlinkpath+','+'0'*zero).encode('utf-8'))
+        (num,zero) = calculate('Unlink,'+workpath+unlinkpath+',')
+        s.send((str(num)+','+'Unlink,'+workpath+unlinkpath+','+'0'*zero).encode('utf-8'))
         return os.unlink(unlinkpath)
 
     def symlink(self, target, name):
@@ -133,8 +133,8 @@ class Passthrough(Operations):
             return os.rename(oldpath, newpath)
         os.rename(oldpath, newpath)
         ctime = time2acs(os.stat(newpath).st_ctime)
-        (num,zero) = calculate('Rename,'+oldpath+','+newpath+','+name_tuple[1]+','+ctime+','+ext_tuple[1]+',')
-        s.send((str(num)+','+'Rename,'+oldpath+','+newpath+','+name_tuple[1]+','+
+        (num,zero) = calculate('Rename,'+workpath+oldpath+','+workpath+newpath+','+name_tuple[1]+','+ctime+','+ext_tuple[1]+',')
+        s.send((str(num)+','+'Rename,'+workpath+oldpath+','+workpath+newpath+','+name_tuple[1]+','+
             ext_tuple[1]+','+ctime+','+'0'*zero).encode('utf-8'))
         return None
 
@@ -159,8 +159,8 @@ class Passthrough(Operations):
         path_str = ",".join(path_list)
         fd = os.open(full_path, flags)
         atime = time2acs(os.fstat(fd).st_atime)
-        (num,zero) = calculate('Open,'+full_path+','+atime+','+path_str+',')
-        s.send((str(num)+','+'Open,'+full_path+','+atime+','+path_str+','+
+        (num,zero) = calculate('Open,'+workpath+full_path+','+atime+','+path_str)
+        s.send((str(num)+','+'Open,'+workpath+full_path+','+atime+','+path_str+
             '0'*zero).encode('utf-8'))
         return fd
 
@@ -180,9 +180,9 @@ class Passthrough(Operations):
         ctime = time2acs(info.st_ctime)
         if ext_tuple[1][1:3]=='sw' or not ext_tuple[1] or ext_tuple[1][-1]=='~':
             return fd
-        (num,zero) = calculate(','*7+'Create'+full_path+name_tuple[1]+','+ext_tuple[1]+
+        (num,zero) = calculate(','*7+'Create'+workpath+full_path+name_tuple[1]+','+ext_tuple[1]+
             str(info.st_uid)+str(atime)+str(mtime)+str(ctime))
-        s.send((str(num)+','+'Create,'+full_path+','+name_tuple[1]+','+ext_tuple[1]+','+
+        s.send((str(num)+','+'Create,'+workpath+full_path+','+name_tuple[1]+','+ext_tuple[1]+','+
             str(info.st_uid)+','+atime+','+mtime+','+ctime+','+'0'*zero).encode('utf-8'))
         return fd
 #       else:
@@ -204,8 +204,8 @@ class Passthrough(Operations):
         ret = os.read(fh, length)
         info = os.fstat(fh)
         atime = time2acs(info.st_atime)
-        (num,zero) = calculate('Read,'+path+','+atime+',')
-        s.send((str(num)+','+'Read,'+path+','+atime+','+'0'*zero).encode('utf-8'))
+        (num,zero) = calculate('Read,'+workpath+path+','+atime+',')
+        s.send((str(num)+','+'Read,'+workpath+path+','+atime+','+'0'*zero).encode('utf-8'))
         return ret 
 
     def write(self, path, buf, offset, fh):
@@ -229,6 +229,8 @@ class Passthrough(Operations):
 
 def main(mountpoint, root):
     global s
+    global workpath
+    workpath = os.getcwd()+'/'
     address = 'GBFS_Socket'
     s = socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
     try :
