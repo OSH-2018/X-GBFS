@@ -14,7 +14,7 @@ def getproperty(sta):
         L.append(e.reason)
         print(L)
         return L
-
+    
     result1 = response1.read().decode()
     result1 = json.loads(result1)    
     if(result1['status'] != 'ok'):
