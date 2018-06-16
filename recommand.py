@@ -39,11 +39,50 @@ class Recommand:
         for label in strlabel:
             rel_list = self.matchrel(input_node, label)
             relation_list.extend(rel_list)# 所有的关系
-        rel_num = len(relation_list)
+        # 此处有陷阱：因为这里得到的所有关系是根据label检索的，
+        # 然而一个文件节点可以拥有多个label，意味着这里得到的
+        # 关系可能是有相同的端点，导致我们推荐算法中有相同的文
+        # 件，甚至权值的更新也会出现问题
+        # 注：虽然这些关系之间可能两个端点相同，但是这些边之间不会端点、label（r_type）、property都相同。
+        #    因为一个两个端点之间的边label必定不相同，label相同的两条边必定端点不相同
+        #
+        # 解决办法：在上面得到该节点连接的所有关系后，对端点相同的关系进行剔除，留下权值最大的关系
+        #
+        Neighbor_list_all = []# 所有的相邻节点
+        for rel in relation_list:
+            nn = rel.nodes
+            nn0 = nn[0]
+            nn1 = nn[1]
+            if nn0 == input_node:
+                Neighbor_list_all.append(nn1)
+            else:
+                Neighbor_list_all.append(nn0)
+        # 得到Neighbor_list_all为input_node的所有相邻节点，相邻节点的index与relation的index一致
+        Neighbor_index_list = []
+        for neighbor in Neighbor_list_all:
+            find = neighbor
+            Neighbor_index_list.append([i for i,v in enumerate(Neighbor_list_all) if v==find])
+        Neighbor_index_list = sorted(set(Neighbor_index_list), key = Neighbor_index_list.index)
+        # 得到元素为list的list，list中的list是端点相同的边的index
+        new_relation_index_list = []
+        for index_list in Neighbor_index_list:
+            if len(index_list) == 1:
+                new_relation_index_list.append(index_list[0])
+            else:
+                tem_list = []
+                i = 0
+                while i < len(index_list):
+                    tem_list.append(relation_list[index_list[i]]['weight'])
+                    new_relation_index_list.append(tem_list.index(max(tem_list))) 
+        new_relation_list = []
+        for index in new_relation_index_list:
+            new_relation_list.append(relation_list[index])
+        # 得到new_relation_list为处理后的、没有端点相同关系的list
+        rel_num = len(new_relation_list)
         if rel_num >= 5:
             rel_num = 5
         weight_list = []
-        for rel in relation_list:
+        for rel in new_relation_list:
             weight_list.append(rel['weight'])# 提取weight
         # 将weight提取成一个list进行后续操作
         n = rel_num
@@ -56,7 +95,7 @@ class Recommand:
         m = 0
         relation_top5_list = []
         while m < rel_num:
-            relation_top5_list.append(relation_list[index_list[m]])
+            relation_top5_list.append(new_relation_list[index_list[m]])
             m = m + 1
         Neighbor_list = []
         for relation in relation_top5_list:
@@ -113,11 +152,41 @@ class Recommand:
             rel_list = self.matchrel(input_node, label)
             relation_list.extend(rel_list)# 所有的关系
         # 确认relationship的数量，如果小于三个需要特殊考虑
-        rel_num = len(relation_list)
+        Neighbor_list_all = []# 所有的相邻节点
+        for rel in relation_list:
+            nn = rel.nodes
+            nn0 = nn[0]
+            nn1 = nn[1]
+            if nn0 == input_node:
+                Neighbor_list_all.append(nn1)
+            else:
+                Neighbor_list_all.append(nn0)
+        # 得到Neighbor_list_all为input_node的所有相邻节点，相邻节点的index与relation的index一致
+        Neighbor_index_list = []
+        for neighbor in Neighbor_list_all:
+            find = neighbor
+            Neighbor_index_list.append([i for i,v in enumerate(Neighbor_list_all) if v==find])
+        Neighbor_index_list = sorted(set(Neighbor_index_list), key = Neighbor_index_list.index)
+        # 得到元素为list的list，list中的list是端点相同的边的index
+        new_relation_index_list = []
+        for index_list in Neighbor_index_list:
+            if len(index_list) == 1:
+                new_relation_index_list.append(index_list[0])
+            else:
+                tem_list = []
+                i = 0
+                while i < len(index_list):
+                    tem_list.append(relation_list[index_list[i]]['weight'])
+                    new_relation_index_list.append(tem_list.index(max(tem_list))) 
+        new_relation_list = []
+        for index in new_relation_index_list:
+            new_relation_list.append(relation_list[index])
+        # 得到new_relation_list为处理后的、没有端点相同关系的list
+        rel_num = len(new_relation_list)
         if rel_num >= 3:
             rel_num = 3# 当关系数量大于等于3时，限制relationship数量为3
         weight_list = []
-        for rel in relation_list:
+        for rel in new_relation_list:
             weight_list.append(rel['weight'])# 提取weight
         # 将weight提取成一个list进行后续操作
         n = rel_num
@@ -130,7 +199,7 @@ class Recommand:
         m = 0
         relation_top5_list = []
         while m < rel_num:
-            relation_top5_list.append(relation_list[index_list[m]])
+            relation_top5_list.append(new_relation_list[index_list[m]])
             m = m + 1
         # 得到了相关性最大的5个节点与输入节点之间的关系，通过该关系调用.nodes()可以返
         # 回这5个节点
@@ -147,3 +216,7 @@ class Recommand:
         for nodes in Neighbor_list:
             path_list.append(nodes['path'])
         return path_list
+        
+
+
+
