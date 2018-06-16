@@ -1,5 +1,6 @@
 import sys, getopt, os
-from py2neo import Node, Graph, NodeMatcher, Relationship, RelationshipMatcher
+from py2neo import Graph, NodeMatcher, Relationship, RelationshipMatcher
+
 class Shell:
     graph = Graph(password='zhanglifu')
 
@@ -39,7 +40,6 @@ class Shell:
     def test(self, argv):
         try:
             opts, args = getopt.getopt(argv,'-h-s:-l:-r:-a:-d:-f:',['help','show=','showlink=','rec=','add=','delete=','find='])
-            print('args: ', args)
         except getopt.GetoptError:
             print('input error')
             sys.exit(2)
@@ -57,15 +57,17 @@ class Shell:
                 label = label[0]
                 strlabel = self.getlabel(label)
                 print('Labels:')
+                j = 1
                 for i in strlabel:
-                    print('\t', i)
+                    print('\t' + str(j) + '.', i)
+                    j += 1
                 print('Properties:')
-                print('\tname:  ', label['name'])
-                print('\tpath:  ', label['path'])
-                print('\text:   ', label['like'])
-                print('\tctime: ', label['ctime'])
-                print('\tmtime: ', label['mtime'])
-                print('\tatime: ', label['atime'])
+                print('\t1. name:  ', label['name'])
+                print('\t2. path:  ', label['path'])
+                print('\t3. ext:   ', label['like'])
+                print('\t4. ctime: ', label['ctime'])
+                print('\t5. mtime: ', label['mtime'])
+                print('\t6. atime: ', label['atime'])
 
 
             elif opt in ('-l', '--showlink'):
@@ -138,7 +140,6 @@ class Shell:
                     nodes.remove_label(label)
                     self.graph.push(nodes)
                     rels = self.matchrel(nodes, label)
-                    print(rels)
                     for rel in rels:
                         self.graph.separate(rel)
                 print('Label delete successfully! (if it exists)')
