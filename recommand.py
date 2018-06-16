@@ -25,8 +25,17 @@ class Recommand:
         result = list(matcher.match(label))
         return result
     
-    def updateweight(self, relationship, value):
-        relationship['weight'] = relationship['weight'] + value
+    def relmatcher(self, node1, node2):
+        matcher = RelationshipMatcher(self.graph)
+        result = list(matcher.match({node1, node2}))
+        return result
+    
+    def weightincrease(self, relationship):
+        relationship['weight'] = relationship['weight'] + 1
+        self.graph.push(relationship)
+    
+    def weightdecrease(self, relationship):
+        relationship['weight'] = relationship['weight'] - 1
         self.graph.push(relationship)
 
     def shell(self, filepath=None):
@@ -115,16 +124,23 @@ class Recommand:
         index =int(input())-1 #将输入转换为list下标
         # 接下来两个操作：
         # 1：更新权值weight
+        # 注意：选中的关系的权值需要更新，与该权值端点相同的关系的权值也要更新·
         i = 0
         while i < rel_num:
             if i == index:
-                if relation_top5_list[i]['weight'] == 10:
-                    continue
-                else:
-                    self.updateweight(relation_top5_list[i], 1)
+                l = self.relmatcher(relation_top5_list[i].nodes[0],relation_top5_list[i].nodes[1])#相同端点的relationship的list
+                for ll in l:
+                    if ll['weight'] == 10:
+                        continue
+                    else:
+                        self.weightincrease(ll)
             else:
-                if  relation_top5_list[i]['weight'] >= 6:
-                    self.updateweight(relation_top5_list[i], -1)
+                l = self.relmatcher(relation_top5_list[i].nodes[0],relation_top5_list[i].nodes[1])#相同端点的relationship的list
+                for ll in l:
+                    if ll['weight'] >= 6:
+                        self.weightdecrease(ll)
+                    else:
+                        continue
         # 2: 根据用户输入进入新的工作目录
         print("your selection: ")
         print(Neighbor_list[index])
