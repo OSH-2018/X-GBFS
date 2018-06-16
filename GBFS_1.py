@@ -17,6 +17,12 @@ except ImportError:
     print('failed to import socket')
 
 try:
+   import recommand
+except ImportError as e:
+    print(e)
+    print('failed to import recommand.py')
+
+try:
     from fuse import FUSE, FuseOSError, Operations
 except ImportError: 
     print('failed to import fuse')
@@ -146,8 +152,17 @@ class Passthrough(Operations):
 
     def open(self, path, flags):
         # 打开一个文件时，需要使用推荐算法 把预读取的文件放入内存中
+        # 如果文件太大，不宜直接放入内存
+        rec = recommand.Recommand()
         full_path = self._full_path(path)
-        return os.open(full_path, flags)
+        path_list = rec.server(path)
+        path_str = ",".join(path_list)
+        fd = os.open(full_path, flags)
+        atime = time2acs(os.fstat(fd).st_atime)
+        (num,zero) = calculate('Open,'+full_path+','+atime+','+path_str+',')
+        s.send((str(num)+','+'Open,'+full_path+','+atime+','+path_str+','+
+            '0'*zero).encode('utf-8'))
+        return fd
 
     def create(self, path, mode, fi=None):
         # 在创造文件时，与socket建立联系
