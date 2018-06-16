@@ -74,5 +74,5 @@ def getproperty(sta):
         print(L)
         return L
     #        return(result['ret'])
-st = input()
-getproperty(st)
+#st = input()
+#getproperty(st)
