@@ -51,6 +51,3 @@ def getproperty(sta):
         print(L)
         return L
     #        return(result['ret'])
-
-st = input()
-getproperty(st)
