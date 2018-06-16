@@ -25,6 +25,10 @@ class Recommand:
         matcher = NodeMatcher(self.graph)
         result = list(matcher.match(label))
         return result
+    
+    def updateweight(self, relationship, value):
+        relationship['weight'] = relationship['weight'] + value
+        self.graph.push(relationship) 
 
     def shell(self, filepath=None):
         input_node = self.matchpath(filepath)
@@ -68,6 +72,19 @@ class Recommand:
             print(i,':',Neighbor_node)
         print("\nPlease select the file: ")
         index =int(input())-1 #将输入转换为list下标
+        # 接下来两个操作：
+        # 1：更新权值weight
+        i = 0
+        while i < 5:
+            if i == index:
+                if relation_top5_list[i]['weight'] == 10:
+                    continue
+                else:
+                    self.updateweight(relation_top5_list[i], 1)
+            else:
+                if  relation_top5_list[i]['weight'] >= 6:
+                    self.updateweight(relation_top5_list[i], -1)
+        # 2: 根据用户输入进入新的工作目录
         print("your selection: ")
         print(Neighbor_list[index])
         target_node_str = Neighbor_list[index]
@@ -124,4 +141,3 @@ class Recommand:
         for nodes in Neighbor_list:
             path_list.append(nodes['path'])
         return path_list
-        
