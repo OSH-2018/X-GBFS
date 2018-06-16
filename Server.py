@@ -2,6 +2,7 @@ import socket
 from py2neo import Graph, Node, NodeMatcher, Relationship, RelationshipMatcher
 import os
 import GetProperty as gp
+import time
 
 class Server:
     graph = Graph(password='zhanglifu')
@@ -27,7 +28,12 @@ class Server:
             result = 0
         return result
 
-    def NeoHandle(self, op):
+    def relmatcher(self, node1, node2):
+        matcher = RelationshipMatcher(self.graph)
+        result = list(matcher.match({node1, node2}))
+        return result
+
+    def NeoHandle(self, op, filedict):
         op.pop(0)
         if op[0] == 'Create':
             tempnode = self.matchper('path', op[1])
@@ -48,6 +54,7 @@ class Server:
                             if node['path'] == op[1]:
                                 continue
                             r = Relationship(nodes, label, node)
+                            r['weight'] = 1
                             self.graph.create(r)
             else:
                 tempnode = tempnode[0]
@@ -55,6 +62,40 @@ class Server:
                 tempnode['mtime'] = op[6]
                 tempnode['ctime'] = op[7]
                 self.graph.push(tempnode)
+        
+        elif op[0] == 'Open':
+            nodes = self.matchper('path', op[1])
+            opentime = time.mktime(time.strptime(op[2], '%a %b %d %H:%M:%S %Y'))
+            if abs(filedict['time'] - opentime) < 100:
+                if filedict['file1'] == op[1] or filedict['file2'] == op[1] or filedict['file3'] == op[1]:
+                    lastfile = filedict['initfile']
+                    node1 = self.matchper('path', lastfile)
+                    node1 = node1[0]
+                    node2 = nodes[0]
+                    result = self.relmatcher(node1, node2)
+                    rel = result[0]
+                    if rel['weight'] < 10:
+                        rel['weight'] += 1
+                        self.graph.push(rel)
+                    for i in range(3):
+                        if filedict['file' + str(i + 1)] == op[1]:
+                            continue
+                        else:
+                            node3 = self.matchper('path', filedict['file' + str(i + 1)])
+                            node3 = node3[0]
+                            rel = self.relmatcher(node1, node3)
+                            rel = rel[0]
+                            if rel['weight'] >= 6:
+                                rel['weight'] -= 1
+                                self.graph.push(rel)
+            node = nodes[0]
+            node['atime'] = op[2]
+            filedict['initfile'] = op[1]
+            filedict['time'] = opentime
+            for j in range(3):
+                if j + 3 < len(op):
+                    filedict['file' + str(j + 1)] = op[j + 3]
+            self.graph.push(node)
 
         elif op[0] == 'Read':
             nodes = self.matchper('path', op[1])
@@ -113,6 +154,8 @@ if __name__ == '__main__':
     print('Server start at: %s:' %HOST)
     print('wait for connection...')
     
+    filedict = {'initfile':'', 'file1':'', 'file2':'', 'file3':'', 'time':''}
+
     while True:
         conn, addr = s.accept()
         print('Connected by ', addr)
@@ -133,6 +176,6 @@ if __name__ == '__main__':
             data_list = strdata.split(',')
             print(data_list)
             handle = Server()
-            handle.NeoHandle(data_list)
+            handle.NeoHandle(data_list, filedict)
             conn.send(b"server received you message.")
     

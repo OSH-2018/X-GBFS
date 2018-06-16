@@ -1,5 +1,5 @@
 from py2neo import Node, Graph, NodeMatcher, RelationshipMatcher, Relationship, Database
-from heapq import nlargest
+#from heapq import nlargest
 import os, sys, getopt
 #import os
 #获取当前工作目录
@@ -10,12 +10,11 @@ import os, sys, getopt
 
 class Recommand:
     graph = Graph(password='neo4j')
-    
     def matchpath(self, filepath):
         matcher = NodeMatcher(self.graph)
         result = list(matcher.match(path=filepath))
         return result
-
+    
     def matchrel(self, node, label):
         matcher = RelationshipMatcher(self.graph)
         result = list(matcher.match({node},label))
@@ -28,7 +27,7 @@ class Recommand:
     
     def updateweight(self, relationship, value):
         relationship['weight'] = relationship['weight'] + value
-        self.graph.push(relationship) 
+        self.graph.push(relationship)
 
     def shell(self, filepath=None):
         input_node = self.matchpath(filepath)
@@ -40,11 +39,14 @@ class Recommand:
         for label in strlabel:
             rel_list = self.matchrel(input_node, label)
             relation_list.extend(rel_list)# 所有的关系
+        rel_num = len(relation_list)
+        if rel_num >= 5:
+            rel_num = 5
         weight_list = []
         for rel in relation_list:
             weight_list.append(rel['weight'])# 提取weight
         # 将weight提取成一个list进行后续操作
-        n = 5
+        n = rel_num
         index_list = []
         while n > 0:
             index = weight_list.index(max(weight_list))
@@ -53,7 +55,7 @@ class Recommand:
             n = n - 1
         m = 0
         relation_top5_list = []
-        while m < 5:
+        while m < rel_num:
             relation_top5_list.append(relation_list[index_list[m]])
             m = m + 1
         Neighbor_list = []
@@ -110,11 +112,15 @@ class Recommand:
         for label in strlabel:
             rel_list = self.matchrel(input_node, label)
             relation_list.extend(rel_list)# 所有的关系
+        # 确认relationship的数量，如果小于三个需要特殊考虑
+        rel_num = len(relation_list)
+        if rel_num >= 3:
+            rel_num = 3# 当关系数量大于等于3时，限制relationship数量为3
         weight_list = []
         for rel in relation_list:
             weight_list.append(rel['weight'])# 提取weight
         # 将weight提取成一个list进行后续操作
-        n = 5
+        n = rel_num
         index_list = []
         while n > 0:
             index = weight_list.index(max(weight_list))
@@ -123,7 +129,7 @@ class Recommand:
             n = n - 1
         m = 0
         relation_top5_list = []
-        while m < 5:
+        while m < rel_num:
             relation_top5_list.append(relation_list[index_list[m]])
             m = m + 1
         # 得到了相关性最大的5个节点与输入节点之间的关系，通过该关系调用.nodes()可以返
