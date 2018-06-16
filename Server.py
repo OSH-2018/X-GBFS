@@ -1,6 +1,7 @@
 import socket
 from py2neo import Graph, Node, NodeMatcher, Relationship, RelationshipMatcher
 import os
+import GetProperty as gp
 
 class Server:
     graph = Graph(password='zhanglifu')
@@ -29,19 +30,31 @@ class Server:
     def NeoHandle(self, op):
         op.pop(0)
         if op[0] == 'Create':
-            nodes = Node(name=op[2], path=op[1], ext=op[3], uid=op[4], atime=op[5], mtime=op[6], ctime=op[7])
-            labels = ['Person', 'Thing', 'leafz']
-            self.graph.create(nodes)
-            for label in labels:
-                print('label: ', label)
-                nodes.add_label(label)
-                self.graph.push(nodes)
-                linknodes = self.matchlabel(label)
-                for node in linknodes:
-                    if node['path'] == op[1]:
-                        continue
-                    r = Relationship(nodes, label, node)
-                    self.graph.create(r)
+            tempnode = self.matchper('path', op[1])
+            if tempnode == []:
+                nodes = Node(name=op[2], path=op[1], ext=op[3], uid=op[4], atime=op[5], mtime=op[6], ctime=op[7])
+                filename = op[2].split('.')
+                filename = filename[0]
+                labels = gp.getproperty(filename)
+                self.graph.create(nodes)
+                if labels[0] == 'OK':
+                    labels.pop(0)
+                    for label in labels:
+                        print('label: ', label)
+                        nodes.add_label(label)
+                        self.graph.push(nodes)
+                        linknodes = self.matchlabel(label)
+                        for node in linknodes:
+                            if node['path'] == op[1]:
+                                continue
+                            r = Relationship(nodes, label, node)
+                            self.graph.create(r)
+            else:
+                tempnode = tempnode[0]
+                tempnode['atime'] = op[5]
+                tempnode['mtime'] = op[6]
+                tempnode['ctime'] = op[7]
+                self.graph.push(tempnode)
 
         elif op[0] == 'Read':
             nodes = self.matchper('path', op[1])
@@ -78,7 +91,7 @@ class Server:
             node['mtime'] = op[3]
             node['ctime'] = op[4]
             self.graph.push(node)
-            
+
         else:
             return
 
@@ -106,16 +119,15 @@ if __name__ == '__main__':
     
         while True:
             data = conn.recv(100)
+            strdata = data.decode('UTF-8')
             print(data)
             if not data:
                 break
-            strdata = str(data)
-            strdata = strdata[2:-1]
+            print(strdata[0])
             if strdata[0] != '0':
                 for i in range(int(strdata[0])):
                     data = conn.recv(100)
-                    strdata_temp = str(data)
-                    strdata_temp = strdata_temp[2:-1]
+                    strdata_temp = data.decode('UTF-8')
                     strdata = strdata + strdata_temp
     
             data_list = strdata.split(',')

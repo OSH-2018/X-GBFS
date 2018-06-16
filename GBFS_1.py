@@ -9,7 +9,7 @@ try:
     import errno
     import time
 except ImportError:
-    print('failed to import os sys errno')
+    print('failed to import os sys errno time')
 
 try:
     import socket
@@ -121,23 +121,24 @@ class Passthrough(Operations):
     def rename(self, old, new):
         oldpath = self._full_path(old)
         newpath = self._full_path(new)
-        name_tuple=os.path.splitext(newpath)
-        if name_tuple[1][1:3]=='sw' or not name_tuple[1] or name_tuple[1][-1]=='~':
+        name_tuple = os.path.split(newpath)
+        ext_tuple=os.path.splitext(newpath)
+        if ext_tuple[1][1:3]=='sw' or not ext_tuple[1] or ext_tuple[1][-1]=='~':
             return os.rename(oldpath, newpath)
         os.rename(oldpath, newpath)
         ctime = time2acs(os.stat(newpath).st_ctime)
-        (num,zero) = calculate('Rename,'+newpath+','+ctime+','+name_tuple[1]+',')
-        s.send((str(num)+','+'Rename,'+newpath+','+name_tuple[1]+','+ctime+','+'0'*zero).encode('utf-8'))
+        (num,zero) = calculate('Rename,'+oldpath+','+newpath+','+name_tuple[1]+','+ctime+','+ext_tuple[1]+',')
+        s.send((str(num)+','+'Rename,'+oldpath+','+newpath+','+name_tuple[1]+','+
+            ext_tuple[1]+','+ctime+','+'0'*zero).encode('utf-8'))
         return None
 
     def link(self, target, name):
         targetpath=self._full_path(target)
         namepath=self._full_path(name)
-        (num,zero) = calculate('Link,'+namepath+',')
-        s.send((str(num)+','+'Link,'+namepath+','+'0'*zero).encode('utf-8'))
         return os.link(targetpath, namepath)
 
     def utimens(self, path, times=None):
+        # 返回文件的访问和修改时间
         return os.utime(self._full_path(path), times)
 
     # File methods
@@ -150,29 +151,46 @@ class Passthrough(Operations):
 
     def create(self, path, mode, fi=None):
         # 在创造文件时，与socket建立联系
-        # 发送顺序为 Create 路径 
         full_path = self._full_path(path)
+        name_tuple = os.path.split(full_path)
+        ext_tuple = os.path.splitext(full_path)
+        
+#       filepath = os.path.abspath(os.curdir)+'/'+sys.argv[2]+path[1:]
+#       print(filepath)
+#       if os.path.isfile(filepath) == False:
         fd = os.open(full_path, os.O_RDWR | os.O_CREAT, mode)        
         info = os.fstat(fd)
         atime = time2acs(info.st_atime) 
         mtime = time2acs(info.st_mtime)
         ctime = time2acs(info.st_ctime)
-        name_tuple = os.path.splitext(full_path)
-        if name_tuple[1][1:3]=='sw' or not name_tuple[1] or name_tuple[1][-1]=='~':
+        if ext_tuple[1][1:3]=='sw' or not ext_tuple[1] or ext_tuple[1][-1]=='~':
             return fd
-        (num,zero) = calculate(','*7+'Create'+full_path+name_tuple[1]+
+        (num,zero) = calculate(','*7+'Create'+full_path+name_tuple[1]+','+ext_tuple[1]+
             str(info.st_uid)+str(atime)+str(mtime)+str(ctime))
-        s.send((str(num)+','+'Create,'+full_path+','+name_tuple[1]+','+str(info.st_uid)+','+
-            atime+','+mtime+','+ctime+','+'0'*zero).encode('utf-8'))
+        s.send((str(num)+','+'Create,'+full_path+','+name_tuple[1]+','+ext_tuple[1]+','+
+            str(info.st_uid)+','+atime+','+mtime+','+ctime+','+'0'*zero).encode('utf-8'))
         return fd
+#       else:
+#           fd = os.open(full_path, os.O_RDWR | os.O_CREAT, mode)        
+#           info = os.fstat(fd)
+#           atime = time2acs(info.st_atime) 
+#           mtime = time2acs(info.st_mtime)
+#           ctime = time2acs(info.st_ctime)
+#           if ext_tuple[1][1:3]=='sw' or not ext_tuple[1] or ext_tuple[1][-1]=='~':
+#               return fd
+#           (num,zero) = calculate('Change,'+full_path+','+atime+','+mtime+','+ctime+',')
+#           s.send((str(num)+','+'Change,'+full_path+','+atime+','+mtime+','+
+#               ctime+','+'0'*zero).encode('utf-8'))
+#           return fd
+            
 
     def read(self, path, length, offset, fh):
         os.lseek(fh, offset, os.SEEK_SET)
         ret = os.read(fh, length)
         info = os.fstat(fh)
         atime = time2acs(info.st_atime)
-        (num,zero) = calculate('Read,'+atime+',')
-        s.send((str(num)+','+'Read,'+atime+','+'0'*zero).encode('utf-8'))
+        (num,zero) = calculate('Read,'+path+','+atime+',')
+        s.send((str(num)+','+'Read,'+path+','+atime+','+'0'*zero).encode('utf-8'))
         return ret 
 
     def write(self, path, buf, offset, fh):
@@ -196,8 +214,12 @@ class Passthrough(Operations):
 
 def main(mountpoint, root):
     global s
-    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    s.connect(('127.0.0.1',9999))                   
+    address = 'GBFS_Socket'
+    s = socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+    try :
+        s.connect(address)
+    except socket.error:
+        print('socket error')
     FUSE(Passthrough(root), mountpoint, foreground=True)
 
 if __name__ == '__main__':
