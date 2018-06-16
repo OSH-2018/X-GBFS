@@ -46,12 +46,10 @@ class Shell:
         for opt, arg in opts:
             if opt in ('-s', '--show'):
                 filename = arg
-                print(filename)
                 if args != []:
                     print('Wrong Input')
                     exit(1)
                 filepath = os.path.abspath(os.curdir) + '/' + filename
-                print(filepath)
                 label = self.matchpath(filepath)
                 if label == []:
                     print('Wrong Input')

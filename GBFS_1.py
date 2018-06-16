@@ -28,7 +28,7 @@ except ImportError:
     print('failed to import fuse')
 
 def calculate(string):
-    l = len(string)
+    l = len(string.encode('UTF-8'))
     num = (l+2) // 100
     zero = (num+1)*100-l-2
     return (num,zero)
@@ -159,8 +159,8 @@ class Passthrough(Operations):
         path_str = ",".join(path_list)
         fd = os.open(full_path, flags)
         atime = time2acs(os.fstat(fd).st_atime)
-        (num,zero) = calculate('Open,'+workpath+full_path+','+atime+','+path_str)
-        s.send((str(num)+','+'Open,'+workpath+full_path+','+atime+','+path_str+
+        (num,zero) = calculate('Open,,'+workpath+full_path+','+atime+','+path_str)
+        s.send((str(num)+','+'Open,'+workpath+full_path+','+atime+','+path_str+','+
             '0'*zero).encode('utf-8'))
         return fd
 

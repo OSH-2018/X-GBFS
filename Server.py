@@ -59,6 +59,7 @@ class Server:
                             self.graph.create(r)
             else:
                 tempnode = tempnode[0]
+                tempnode['ext'] = op[3]
                 tempnode['atime'] = op[5]
                 tempnode['mtime'] = op[6]
                 tempnode['ctime'] = op[7]
@@ -69,6 +70,16 @@ class Server:
             if nodes == []:
                 print('Wrong op')
                 return
+            prefetch = op[3:]
+            for prefile in prefetch:
+                if os.path.exists(prefile):
+                    size = os.path.getsize(prefile)
+                    fd = os.open(prefile, os.O_RDONLY)
+                    if size < 4 * 1024 * 1024:
+                        os.read(fd, size)
+                    else:
+                        os.read(fd, 4 * 1024 * 1024)
+                    os.close(fd)
             opentime = time.mktime(time.strptime(op[2], '%a %b %d %H:%M:%S %Y'))
             print('filedict: ', filedict)
             if abs(filedict['time'] - opentime) < 100:
