@@ -107,8 +107,10 @@ class Recommand:
             relation_top5_list.append(new_relation_list[index_list[m]])
             m = m + 1
         Neighbor_list = []
+        weight_list_2 = []# 用于输出weight到屏幕，其下标对应的是relationship_top5_list[]的下标
         for relation in relation_top5_list:
             # 对得到的关系list进行操作提取出输入node的邻点
+            weight_list_2.append(relation['weight'])# 下标不仅对应relationship_top5_list[]的下标，还与Neighbor_list[]的下标对应
             Neighbor_nodes = relation.nodes
             Neighbor_node0 = Neighbor_nodes[0]
             Neighbor_node1 = Neighbor_nodes[1]
@@ -119,7 +121,10 @@ class Recommand:
         i = 1
         print("GBFS file recommand service: ")
         for Neighbor_node in Neighbor_list:
-            print(i,':',Neighbor_node)
+            # print(i,':',Neighbor_node)
+            # 为了测试方便，决定多输出一个数据————即每个文件对应关系的权值
+            # print(i, ':', Neighbor_node,',','its weight is:', Neighbor_node['weight'])
+            print(i, ':', Neighbor_node,',','its weight is:', weight_list_2[index(Neighbor_list.index(Neighbor_node))])
         print("\nPlease select the file: ")
         index =int(input())-1 #将输入转换为list下标
         # 接下来两个操作：
