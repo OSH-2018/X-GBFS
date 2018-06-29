@@ -45,32 +45,45 @@ class Shell:
             print('input error')
             sys.exit(2)
         for opt, arg in opts:
+
             if opt in ('-s', '--show'):
                 filename = arg
-                print(filename)
-                if args != []:
-                    print('No filename,please give a correct filename')
-                    exit(1)
                 filepath = os.path.abspath(os.curdir) + '/' + filename
-                print(filepath)
-                label = self.matchpath(filepath)
-                if label == []:
-                    print('No label in Neo4j')
+                files = os.listdir()
+                filenum = 1
+                for text in args:
+                    for f in files:
+                        if f == text:
+                            filenum += 1
+                            break
+                if filenum != len(args) + 1:
+                    print('Please only enter filename')
                     exit(1)
-                label = label[0]
-                strlabel = self.getlabel(label)
-                print('Labels:')
-                j = 1
-                for i in strlabel:
-                    print('\t' + str(j) + '.', i)
-                    j += 1
-                print('Properties:')
-                print('\t1. name:  ', label['name'])
-                print('\t2. path:  ', label['path'])
-                print('\t3. ext:   ', label['ext'])
-                print('\t4. ctime: ', label['ctime'])
-                print('\t5. mtime: ', label['mtime'])
-                print('\t6. atime: ', label['atime'])
+                for k in range(filenum):
+                    label = self.matchpath(filepath)
+                    if label == []:
+                        print('No label in Neo4j')
+                        exit(1)
+                    label = label[0]
+                    strlabel = self.getlabel(label)
+                    print('File: ', filename)
+                    print('Labels:')
+                    j = 1
+                    for i in strlabel:
+                        print('\t' + str(j) + '.', i)
+                        j += 1
+                    print('Properties:')
+                    print('\t1. name:  ', label['name'])
+                    print('\t2. path:  ', label['path'])
+                    print('\t3. ext:   ', label['ext'])
+                    print('\t4. ctime: ', label['ctime'])
+                    print('\t5. mtime: ', label['mtime'])
+                    print('\t6. atime: ', label['atime'])
+                    print('\n')
+                    if k == len(args):
+                        break
+                    filename = args[k]
+                    filepath = os.path.abspath(os.curdir) + '/' + filename
 
 
             elif opt in ('-l', '--showlink'):
@@ -111,42 +124,27 @@ class Shell:
 
             elif opt in ('-a', '--add'):
                 if args == []:
-                    print('No label,please give a label')
+                    print('Least one label should be given')
                     exit(1)
                 filename = arg
-                filenum = 0
-                while filename in os.listdir():
-                    filename = args[filenum]
-                    filenum = filenum+1
-                if filenum > 1 :
-                    node_list = args[filenum:]
-                    dirs = args[:filenum-1].append(arg)
-                    for node in node_list:
-                        for f in dirs:
-                            filepath = os.path.abspath(os.curdir) + '/' + f
-                            nodes = self.matchpath(filepath)
-                            if nodes == []:
-                                print('No node in Neo4j')
-                                exit(1)
-                            nodes = nodes[0]
-                            for label in node_list:
-                                nodes.add_label(label)
-                                self.graph.push(nodes)
-                                linknodes = self.matchlabel(label)
-                                for node in linknodes:
-                                    if node['path'] == filepath:
-                                        continue
-                                    r = Relationship(nodes, label, node)
-                                    self.graph.create(r)            
-                else:
-                    filepath = os.path.abspath(os.curdir) + '/' + filename
+                filepath = os.path.abspath(os.curdir) + '/' + filename
+                files = os.listdir()
+                filenum = 1
+                for test in args:
+                    for f in files:
+                        if f == test:
+                            filenum += 1
+                            break
+                labels = args[filenum - 1:]
+                for i in range(filenum):
                     nodes = self.matchpath(filepath)
-                    print(filepath,args)
                     if nodes == []:
                         print('No node in Neo4j')
                         exit(1)
                     nodes = nodes[0]
-                    for label in args:
+                    for label in labels:
+                        if nodes.has_label(label):
+                            break
                         nodes.add_label(label)
                         self.graph.push(nodes)
                         linknodes = self.matchlabel(label)
@@ -155,6 +153,8 @@ class Shell:
                                 continue
                             r = Relationship(nodes, label, node)
                             self.graph.create(r)
+                    filename = args[i]
+                    filepath = os.path.abspath(os.curdir) + '/' + filename
                 print('Label add successfully!')
 
 
