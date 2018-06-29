@@ -113,20 +113,14 @@ class Shell:
                 if args == []:
                     print('No label,please give a label')
                     exit(1)
-                filename = arg
-                p = arg 
+                p = filename = arg
                 filenum = 0
                 while p in os.listdir():
                     p = args[filenum]
                     filenum = filenum+1
-                print(filenum)
-                print(args)
                 if filenum > 1 :
-                    node_list = args[filenum-1:]
-                    print(node_list)
-                    dirs = args[0:filenum-2]
-                    dirs.append(arg)
-                    print(dirs)
+                    node_list = args[filenum:]
+                    dirs = args[:filenum-1].append(arg)
                     for node in node_list:
                         for f in dirs:
                             filepath = os.path.abspath(os.curdir) + '/' + f
@@ -147,6 +141,7 @@ class Shell:
                 else:
                     filepath = os.path.abspath(os.curdir) + '/' + filename
                     nodes = self.matchpath(filepath)
+                    print(filepath,args)
                     if nodes == []:
                         print('No node in Neo4j')
                         exit(1)
