@@ -66,6 +66,7 @@ class Server:
                 self.graph.push(tempnode)
         
         elif op[0] == 'Open':
+            print('ops: ', op)
             nodes = self.matchper('path', op[1])
             if nodes == []:
                 print('Wrong op')
