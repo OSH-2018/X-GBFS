@@ -87,34 +87,48 @@ class Shell:
 
 
             elif opt in ('-l', '--showlink'):
-                if args != []:
-                    print('No filename,please give a correct filename')
-                    exit(1)
                 filename = arg
                 filepath = os.path.abspath(os.curdir) + '/' + filename
-                nodes = self.matchpath(filepath)
-                if nodes == []:
-                    print('No node in Neo4j')
+                files = os.listdir()
+                filenum = 1
+                for text in args:
+                    for f in files:
+                        if f == text:
+                            filenum += 1
+                            break
+                if filenum != len(args) + 1:
+                    print('Please only enter filename')
                     exit(1)
-                nodes = nodes[0]
-                strlabel = str(nodes)
-                strlabel = strlabel.split(' ')
-                strlabel = strlabel[0].split(':')
-                strlabel = strlabel[1:]
-                for label in strlabel:
-                    print('Relationship:', label)
-                    linknodes = self.matchlabel(label)
-                    j = 1
-                    for node in linknodes:
-                        if node['path'] == filepath:
-                            continue
-                        print('\t', str(j) + '.', 'path: ', node['path'])
-                        j += 1
+                for i in range(filenum):
+                    nodes = self.matchpath(filepath)
+                    if nodes == []:
+                        print('No node in Neo4j')
+                        exit(1)
+                    nodes = nodes[0]
+                    strlabel = str(nodes)
+                    strlabel = strlabel.split(' ')
+                    strlabel = strlabel[0].split(':')
+                    strlabel = strlabel[1:]
+                    print('File: ', filename)
+                    for label in strlabel:
+                        print('Relationship:', label)
+                        linknodes = self.matchlabel(label)
+                        j = 1
+                        for node in linknodes:
+                            if node['path'] == filepath:
+                                continue
+                            print('\t', str(j) + '.', 'path: ', node['path'])
+                            j += 1
+                    print('\n')
+                    if i == len(args):
+                        break
+                    filename = args[i]
+                    filepath = os.path.abspath(os.curdir) + '/' + filename
                 
 
             elif opt in ('-r', '--recommend'):
                 if args != []:
-                    print('too many parameters')
+                    print('Too many parameters')
                     exit(1)
                 filename = arg
                 path = os.path.abspath(os.curdir) + '/' + filename
