@@ -62,7 +62,7 @@
      - input: (str) path
      - output: (list) path: ['path', 'path', 'path', 'path', 'path']
 
-## `GBShell.py` Instractions
+## `GBShell.py` Instructions
 
 Usage： ./GBShell.py  [OPTION]...  [FILE]...  [LABEL/KEY:value]
 
@@ -101,3 +101,4 @@ Description：a command line ，users can operate on this to controll the whole 
 ​	    -s, --show
 
 ​			Print all the labels and proporties of the given file [FILE]. 
+
