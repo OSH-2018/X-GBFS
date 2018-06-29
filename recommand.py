@@ -38,6 +38,13 @@ class Recommand:
         relationship['weight'] = relationship['weight'] - 1
         self.graph.push(relationship)
 
+    def deleteDuplicatedElementFromList(self, list):
+        resultList = []
+        for item in list:
+                if not item in resultList:
+                        resultList.append(item)
+        return resultList
+
     def shell(self, filepath=None):
         input_node = self.matchpath(filepath)
         input_node = input_node[0]
@@ -72,7 +79,9 @@ class Recommand:
         for neighbor in Neighbor_list_all:
             find = neighbor
             Neighbor_index_list.append([i for i,v in enumerate(Neighbor_list_all) if v==find])
-        Neighbor_index_list = sorted(set(Neighbor_index_list), key = Neighbor_index_list.index)
+        # Neighbor_index_list = sorted(set(Neighbor_index_list), key = Neighbor_index_list.index)
+        # 上面着句会导致unhashable错误，改用以下的做法了：
+        Neighbor_index_list = self.deleteDuplicatedElementFromList(Neighbor_index_list)
         # 得到元素为list的list，list中的list是端点相同的边的index
         new_relation_index_list = []
         for index_list in Neighbor_index_list:
@@ -98,9 +107,9 @@ class Recommand:
         n = rel_num
         index_list = []
         while n > 0:
-            index = weight_list.index(max(weight_list))
+            index_ = weight_list.index(max(weight_list))
             index_list.append(index)
-            weight_list[index] = 0
+            weight_list[index_] = 0
             n = n - 1
         m = 0
         relation_top5_list = []
