@@ -125,6 +125,8 @@ class Recommand:
             # 为了测试方便，决定多输出一个数据————即每个文件对应关系的权值
             # print(i, ':', Neighbor_node,',','its weight is:', Neighbor_node['weight'])
             print(i, ':', Neighbor_node,',','its weight is:', weight_list_2[index(Neighbor_list.index(Neighbor_node))])
+
+            print("-1 : 留在当前工作目录。")
         print("\nPlease select the file: ")
         index =int(input())-1 #将输入转换为list下标
         # 接下来两个操作：
@@ -147,18 +149,24 @@ class Recommand:
                     else:
                         continue
         # 2: 根据用户输入进入新的工作目录
-        print("your selection: ")
-        print(Neighbor_list[index])
-        target_node_str = Neighbor_list[index]
-        target_node_str = target_node_str.split(' ')
-        target_node_str = target_node_str[1:]
-        for split_parts in target_node_str:
-            if split_parts == 'path:':
-                target_path = target_node_str[target_node_str.index('path:')+1]
-        target_path = target_path.split('\'')# 使用转义字符 注意
-        target_path =  target_path[1]
-        #os.getcwd# 获取当前工作目录
-        os.chdir(target_path)# 转到了目标目录
+        # 需要给用户选择留在当前工作目录还是跳转到新的工作目录的机会
+        if index == 4 or index == 3 or index == 2 or index == 1 or index == 0:
+            print("your selection: ")
+            print(Neighbor_list[index])
+            target_node_str = Neighbor_list[index]
+            target_node_str = target_node_str.split(' ')
+            target_node_str = target_node_str[1:]
+            for split_parts in target_node_str:
+                if split_parts == 'path:':
+                    target_path = target_node_str[target_node_str.index('path:')+1]
+            target_path = target_path.split('\'')# 使用转义字符 注意
+            target_path =  target_path[1]
+            #os.getcwd# 获取当前工作目录
+            os.chdir(target_path)# 转到了目标目录
+        elif index == -1:
+            print("留在当前工作目录。")
+        else:
+            print("Wang input: 输入的不是一个正确的选项！")
     
     
     
@@ -238,6 +246,7 @@ class Recommand:
             path_list.append(nodes['path'])
         return path_list
         
+
 
 
 
