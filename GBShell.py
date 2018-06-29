@@ -1,5 +1,6 @@
 import sys, getopt, os
 from py2neo import Graph, NodeMatcher, Relationship, RelationshipMatcher
+from recommand import Recommand
 
 class Shell:
     graph = Graph(password='zhanglifu')
@@ -100,8 +101,12 @@ class Shell:
 
             elif opt in ('-r', '--recommend'):
                 if args != []:
-                    print('No filename,please give a correct filename')
+                    print('too many parameters')
                     exit(1)
+                filename = arg
+                path = os.path.abspath(os.curdir) + '/' + filename
+                rc = Recommand()
+                rc.shell(filepath=path)
                 print('recommend')
 
             elif opt in ('-a', '--add'):
