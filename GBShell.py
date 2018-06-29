@@ -66,7 +66,7 @@ class Shell:
                 print('Properties:')
                 print('\t1. name:  ', label['name'])
                 print('\t2. path:  ', label['path'])
-                print('\t3. ext:   ', label['like'])
+                print('\t3. ext:   ', label['ext'])
                 print('\t4. ctime: ', label['ctime'])
                 print('\t5. mtime: ', label['mtime'])
                 print('\t6. atime: ', label['atime'])
