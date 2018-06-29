@@ -165,21 +165,33 @@ class Shell:
 
             elif opt in ('-d', '--delete'):    
                 if args == []:
-                    print('No label,please give a label')
+                    print('No label, please give a label')
                     exit(1)
                 filename = arg
                 filepath = os.path.abspath(os.curdir) + '/' + filename
-                nodes = self.matchpath(filepath)
-                if nodes == []:
-                    print('No node in Neo4j')
-                    exit(1)
-                nodes = nodes[0]
-                for label in args:
-                    nodes.remove_label(label)
-                    self.graph.push(nodes)
-                    rels = self.matchrel(nodes, label)
-                    for rel in rels:
-                        self.graph.separate(rel)
+                files = os.listdir()
+                filenum = 1
+                for text in args:
+                    for f in files:
+                        if f == text:
+                            filenum += 1
+                            break
+                labels = args[filenum - 1:]
+                for i in range(filenum):
+                    nodes = self.matchpath(filepath)
+                    if nodes == []:
+                        print('No node in Neo4j')
+                        exit(1)
+                    nodes = nodes[0]
+                    for label in labels:
+                        print('label: ', label)
+                        nodes.remove_label(label)
+                        self.graph.push(nodes)
+                        rels = self.matchrel(nodes, label)
+                        for rel in rels:
+                            self.graph.separate(rel)
+                    filename = args[i]
+                    filepath = os.path.abspath(os.curdir) + '/' + filename
                 print('Label delete successfully! (if it exists)')
 
 
