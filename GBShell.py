@@ -236,22 +236,36 @@ class Shell:
                 print('''Usage： ./GBShell.py  [OPTION]...  [FILE]...  [LABEL/KEY:value]\n
 Description：a command line ，users can operate on this to controll the whole GBFS.\n
 \t-a, --add\n
-​\t\tAdd a label [LABEL] in the given file [FILE]\n
+​\t\tAdd a label [LABEL] or a few labels [LABEL1]...[LABELn] in the given file [FILE].\n
+\t\tInput sample:\n
+\t\t-a [FILE] [LABEL1] [LABEL2] ... [LABELn]\n
+​\t-s, --show\n
+​\t\tGive a file [FILE] or a few files [FILE1]...[FILEn],\n
+\t\tPrint all the labels and proporties.\n 
+\t\tInput sample:\n
+\t\t-s [FILE1] [FILE2]...[FILEn]\n
 \t-d, --delete\n
-​\t\tDelete the label [LABEL] in the given file [FILE].If the given file doesn't have that\n
-\t\tlabel,deleting is invaild,and return a warning signal.\n
+​\t\tDelete a label [LABEL] or some labels [LABEL1]...[LABELn] in the given file [FILE].\n
+\t\tIf the given file doesn't have [LABEL],deleting is invaild,and return a warning signal.\n
+\t\tInput sample:\n
+\t\t-d [FILE] [LABEL1] [LABEL2] ... [LABELn]\n
 ​\t-f, --find\n
 ​\t\tUser gives shell the labels [LABEL] or the proporties [KEY:value],and all the nodes\n
 \t\tthat have the given labels or proporties are printed in the screen.If none node\n
 \t\tmeets the requirements,Not Found will be returned.\n
-\t-h, --help\n
-​\t\tShow the help info.\n
+\t\tInput sample:\n
+\t\t-f [LABEL1] [LABEL2] [KEY1:value1] [LABEL3] [key2:value2]\n
 \t-l, --showlink\n
-​\t\tPrint all the files(nodes) that are adjacent to the given file[FILE].\n
+​\t\tPrint all the files(nodes) that are adjacent to the given file [FILE].\n
+\t\tInput sample:\n
+\t\t-l [FILE1] [FILE2]...[FILEn]\n
 ​\t-r, --rec\n
-​\t\tRecommend.\n
-​\t-s, --show\n
-​\t\tPrint all the labels and proporties of the given file [FILE].\n ''')
+​\t\tRecommend a few files which may have relation with the given flie [FILE].\n
+​\t\tYou can choose the file you want to open.\n
+\t\tInput sample:\n
+\t\t-r [FILE]\n
+\t-h, --help\n
+​\t\tShow the help info.\n''')
 
 if __name__ == '__main__':
     sh = Shell()
