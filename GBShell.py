@@ -114,10 +114,13 @@ class Shell:
                     print('No label,please give a label')
                     exit(1)
                 filename = arg
-                filenum = len(os.listdir())
-                if filenum > 1:
-                    node_list = args[filenum-1:]
-                    dirs = os.listdir()
+                filenum = 0
+                while filename in os.listdir():
+                    filename = args[filenum]
+                    filenum = filenum+1
+                if filenum > 1 :
+                    node_list = args[filenum:]
+                    dirs = args[:filenum-1].append(arg)
                     for node in node_list:
                         for f in dirs:
                             filepath = os.path.abspath(os.curdir) + '/' + f
@@ -134,11 +137,11 @@ class Shell:
                                     if node['path'] == filepath:
                                         continue
                                     r = Relationship(nodes, label, node)
-                                    self.graph.create(r)
-                # 加入 * 功能
-                else :
+                                    self.graph.create(r)            
+                else:
                     filepath = os.path.abspath(os.curdir) + '/' + filename
                     nodes = self.matchpath(filepath)
+                    print(filepath,args)
                     if nodes == []:
                         print('No node in Neo4j')
                         exit(1)
