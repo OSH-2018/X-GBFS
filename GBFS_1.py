@@ -250,7 +250,6 @@ def main(mountpoint, root):
     global workpath
     
     workpath = os.getcwd()+'/'
-    print(workpath)
     address = 'GBFS_Socket'
     s = socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
     try :
