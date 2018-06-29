@@ -1,5 +1,6 @@
 import sys, getopt, os
 from py2neo import Graph, NodeMatcher, Relationship, RelationshipMatcher
+from recommand import Recommand
 
 class Shell:
     graph = Graph(password='zhanglifu')
@@ -66,7 +67,7 @@ class Shell:
                 print('Properties:')
                 print('\t1. name:  ', label['name'])
                 print('\t2. path:  ', label['path'])
-                print('\t3. ext:   ', label['like'])
+                print('\t3. ext:   ', label['ext'])
                 print('\t4. ctime: ', label['ctime'])
                 print('\t5. mtime: ', label['mtime'])
                 print('\t6. atime: ', label['atime'])
@@ -100,8 +101,12 @@ class Shell:
 
             elif opt in ('-r', '--recommend'):
                 if args != []:
-                    print('No filename,please give a correct filename')
+                    print('too many parameters')
                     exit(1)
+                filename = arg
+                path = os.path.abspath(os.curdir) + '/' + filename
+                rc = Recommand()
+                rc.shell(filepath=path)
                 print('recommend')
 
             elif opt in ('-a', '--add'):
@@ -109,10 +114,13 @@ class Shell:
                     print('No label,please give a label')
                     exit(1)
                 filename = arg
-                filenum = len(os.listdir())
-                if filenum > 1:
-                    node_list = args[filenum-1:]
-                    dirs = os.listdir()
+                filenum = 0
+                while filename in os.listdir():
+                    filename = args[filenum]
+                    filenum = filenum+1
+                if filenum > 1 :
+                    node_list = args[filenum:]
+                    dirs = args[:filenum-1].append(arg)
                     for node in node_list:
                         for f in dirs:
                             filepath = os.path.abspath(os.curdir) + '/' + f
@@ -129,11 +137,11 @@ class Shell:
                                     if node['path'] == filepath:
                                         continue
                                     r = Relationship(nodes, label, node)
-                                    self.graph.create(r)
-                # 加入 * 功能
-                else :
+                                    self.graph.create(r)            
+                else:
                     filepath = os.path.abspath(os.curdir) + '/' + filename
                     nodes = self.matchpath(filepath)
+                    print(filepath,args)
                     if nodes == []:
                         print('No node in Neo4j')
                         exit(1)
@@ -152,21 +160,33 @@ class Shell:
 
             elif opt in ('-d', '--delete'):    
                 if args == []:
-                    print('No label,please give a label')
+                    print('No label, please give a label')
                     exit(1)
                 filename = arg
                 filepath = os.path.abspath(os.curdir) + '/' + filename
-                nodes = self.matchpath(filepath)
-                if nodes == []:
-                    print('No node in Neo4j')
-                    exit(1)
-                nodes = nodes[0]
-                for label in args:
-                    nodes.remove_label(label)
-                    self.graph.push(nodes)
-                    rels = self.matchrel(nodes, label)
-                    for rel in rels:
-                        self.graph.separate(rel)
+                files = os.listdir()
+                filenum = 1
+                for text in args:
+                    for f in files:
+                        if f == text:
+                            filenum += 1
+                            break
+                labels = args[filenum - 1:]
+                for i in range(filenum):
+                    nodes = self.matchpath(filepath)
+                    if nodes == []:
+                        print('No node in Neo4j')
+                        exit(1)
+                    nodes = nodes[0]
+                    for label in labels:
+                        print('label: ', label)
+                        nodes.remove_label(label)
+                        self.graph.push(nodes)
+                        rels = self.matchrel(nodes, label)
+                        for rel in rels:
+                            self.graph.separate(rel)
+                    filename = args[i]
+                    filepath = os.path.abspath(os.curdir) + '/' + filename
                 print('Label delete successfully! (if it exists)')
 
 
