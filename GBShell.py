@@ -1,5 +1,5 @@
 import sys, getopt, os
-from py2neo import Graph, NodeMatcher, Relationship, RelationshipMatcher
+from py2neo import Node, Graph, NodeMatcher, Relationship, RelationshipMatcher
 from recommand import Recommand
 
 class Shell:
@@ -31,13 +31,6 @@ class Shell:
             result = 0
         return result
 
-    def getlabel(self, label):
-        strlabel = str(label)
-        strlabel = strlabel.split(' ')
-        strlabel = strlabel[0].split(':')
-        strlabel = strlabel[1:]
-        return strlabel
-
     def test(self, argv):
         try:
             opts, args = getopt.getopt(argv,'-h-s:-l:-r:-a:-d:-f:',['help','show=','showlink=','rec=','add=','delete=','find='])
@@ -65,7 +58,9 @@ class Shell:
                         print('No label in Neo4j')
                         exit(1)
                     label = label[0]
-                    strlabel = self.getlabel(label)
+                    strlabel = str(label.labels)
+                    strlabel = strlabel.split(':')
+                    strlabel = strlabel[1:]
                     print('File: ', filename)
                     print('Labels:')
                     j = 1
@@ -105,9 +100,8 @@ class Shell:
                         print('No node in Neo4j')
                         exit(1)
                     nodes = nodes[0]
-                    strlabel = str(nodes)
-                    strlabel = strlabel.split(' ')
-                    strlabel = strlabel[0].split(':')
+                    strlabel = str(nodes.labels)
+                    strlabel = strlabel.split(':')
                     strlabel = strlabel[1:]
                     print('File: ', filename)
                     for label in strlabel:
@@ -230,7 +224,9 @@ class Shell:
                                 else:
                                     continue
                             elif len(label) == 1:
-                                labels = self.getlabel(node)
+                                labels = str(node.labels)
+                                labels = strlabel.split(':')
+                                labels = strlabel[1:]
                                 if labels.count(label[0]) == 1:
                                     nodes.append(node)
                                 else:
