@@ -48,10 +48,10 @@ class Recommand:
     def shell(self, filepath=None):
         input_node = self.matchpath(filepath)
         input_node = input_node[0]
-        strlabel = str(input_node)
-        strlabel = strlabel.split(' ')
-        strlabel = strlabel[0].split(':')
-        strlabel = strlabel[1:]
+        labels = input_node.labels
+        labels = str(labels)
+        labels = labels.split(':')
+        strlabel = labels[1:]
         relation_list = []
         for label in strlabel:
             rel_list = self.matchrel(input_node, label)
