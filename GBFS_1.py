@@ -36,6 +36,10 @@ def calculate(string):
 def time2acs(st_time):
     return time.asctime(time.localtime(st_time))
 
+def _send_path(partial):
+    partial = partial.lstrip("/")
+    path = os.path.join("mountpoint",partial)
+    return path
 
 class Passthrough(Operations):
     def __init__(self, root):
@@ -63,12 +67,13 @@ class Passthrough(Operations):
 
     def chown(self, path, uid, gid):
         full_path = self._full_path(path)
-        name_tuple = os.path.splitext(full_path)
+        send_path = _send_path(path)
+        ext_tuple = os.path.splitext(full_path)
         ctime = time2acs(os.stat(full_path).st_ctime)
-        if name_tuple[1][1:3]=='sw' or not name_tuple[1] or name_tuple[1][-1]=='~':
+        if ext_tuple[1] != ".txt" and ext_tuple[1] != ".py" and ext_tuple[1] != ".pdf" and ext_tuple[1] != ".exe" and ext_tuple[1] != ".c" and ext_tuple[1] != ".cpp" and ext_tuple[1] != ".jpg" and ext_tuple[1] != ".mp3" and ext_tuple[1] != ".mp4" and ext_tuple[1] != ".avi" and ext_tuple[1] != ".doc" and ext_tuple[1] != ".xsl" :
             return os.chown(full_path, uid, gid)
-        (num,zero) = calculate('Chown,'+workpath+full_path+','+str(uid)+','+ctime+',')
-        s.send((str(num)+','+'Chown,'+workpath+full_path+','+
+        (num,zero) = calculate('Chown,'+workpath+send_path+','+str(uid)+','+ctime+',')
+        s.send((str(num)+','+'Chown,'+workpath+send_path+','+
             str(uid)+','+ctime+','+'0'*zero).encode('utf-8'))
         return os.chown(full_path, uid, gid)
 
@@ -114,11 +119,12 @@ class Passthrough(Operations):
 
     def unlink(self, path):
         unlinkpath=self._full_path(path)
-        name_tuple = os.path.splitext(unlinkpath)
-        if name_tuple[1][1:3]=='sw' or not name_tuple[1] or name_tuple[1][-1]=='~':
+        send_path = _send_path(path)
+        ext_tuple = os.path.splitext(unlinkpath)
+        if ext_tuple[1] != ".txt" and ext_tuple[1] != ".py" and ext_tuple[1] != ".pdf" and ext_tuple[1] != ".exe" and ext_tuple[1] != ".c" and ext_tuple[1] != ".cpp" and ext_tuple[1] != ".jpg" and ext_tuple[1] != ".mp3" and ext_tuple[1] != ".mp4" and ext_tuple[1] != ".avi" and ext_tuple[1] != ".doc" and ext_tuple[1] != ".xsl" :
             return os.unlink(unlinkpath)
-        (num,zero) = calculate('Unlink,'+workpath+unlinkpath+',')
-        s.send((str(num)+','+'Unlink,'+workpath+unlinkpath+','+'0'*zero).encode('utf-8'))
+        (num,zero) = calculate('Unlink,'+workpath+send_path+',')
+        s.send((str(num)+','+'Unlink,'+workpath+send_path+','+'0'*zero).encode('utf-8'))
         return os.unlink(unlinkpath)
 
     def symlink(self, target, name):
@@ -127,14 +133,16 @@ class Passthrough(Operations):
     def rename(self, old, new):
         oldpath = self._full_path(old)
         newpath = self._full_path(new)
+        old_send_path = _send_path(old)
+        new_send_path = _send_path(new)
         name_tuple = os.path.split(newpath)
         ext_tuple=os.path.splitext(newpath)
-        if ext_tuple[1][1:3]=='sw' or not ext_tuple[1] or ext_tuple[1][-1]=='~':
+        if ext_tuple[1] != ".txt" and ext_tuple[1] != ".py" and ext_tuple[1] != ".pdf" and ext_tuple[1] != ".exe" and ext_tuple[1] != ".c" and ext_tuple[1] != ".cpp" and ext_tuple[1] != ".jpg" and ext_tuple[1] != ".mp3" and ext_tuple[1] != ".mp4" and ext_tuple[1] != ".avi" and ext_tuple[1] != ".doc" and ext_tuple[1] != ".xsl" :
             return os.rename(oldpath, newpath)
         os.rename(oldpath, newpath)
         ctime = time2acs(os.stat(newpath).st_ctime)
-        (num,zero) = calculate('Rename,'+workpath+oldpath+','+workpath+newpath+','+name_tuple[1]+','+ctime+','+ext_tuple[1]+',')
-        s.send((str(num)+','+'Rename,'+workpath+oldpath+','+workpath+newpath+','+name_tuple[1]+','+
+        (num,zero) = calculate('Rename,'+workpath+old_send_path+','+workpath+new_send_path+','+name_tuple[1]+','+ctime+','+ext_tuple[1]+',')
+        s.send((str(num)+','+'Rename,'+workpath+old_send_path+','+workpath+new_send_path+','+name_tuple[1]+','+
             ext_tuple[1]+','+ctime+','+'0'*zero).encode('utf-8'))
         return None
 
@@ -155,15 +163,16 @@ class Passthrough(Operations):
         # 如果文件太大，不宜直接放入内存
         rec = recommand.Recommand()
         full_path = self._full_path(path)
+        send_path = _send_path(path)
         path_list = rec.server(path)
         path_str = ",".join(path_list)
         fd = os.open(full_path, flags)
         atime = time2acs(os.fstat(fd).st_atime)
         ext_tuple = os.path.splitext(full_path)
-        if ext_tuple[1][1:3]=='sw' or not ext_tuple[1] or ext_tuple[1][-1]=='~':
+        if ext_tuple[1] != ".txt" and ext_tuple[1] != ".py" and ext_tuple[1] != ".pdf" and ext_tuple[1] != ".exe" and ext_tuple[1] != ".c" and ext_tuple[1] != ".cpp" and ext_tuple[1] != ".jpg" and ext_tuple[1] != ".mp3" and ext_tuple[1] != ".mp4" and ext_tuple[1] != ".avi" and ext_tuple[1] != ".doc" and ext_tuple[1] != ".xsl" :
             return fd
-        (num,zero) = calculate('Open,'+workpath+full_path+','+atime+','+path_str+',')
-        s.send((str(num)+','+'Open,'+workpath+full_path+','+atime+','+path_str+','+
+        (num,zero) = calculate('Open,'+workpath+send_path+','+atime+','+path_str+',')
+        s.send((str(num)+','+'Open,'+workpath+send_path+','+atime+','+path_str+','+
             '0'*zero).encode('utf-8'))
         return fd
 
@@ -172,7 +181,8 @@ class Passthrough(Operations):
         full_path = self._full_path(path)
         name_tuple = os.path.split(full_path)
         ext_tuple = os.path.splitext(full_path)
-        
+        send_path = _send_path(path)
+
 #       filepath = os.path.abspath(os.curdir)+'/'+sys.argv[2]+path[1:]
 #       print(filepath)
 #       if os.path.isfile(filepath) == False:
@@ -181,11 +191,11 @@ class Passthrough(Operations):
         atime = time2acs(info.st_atime) 
         mtime = time2acs(info.st_mtime)
         ctime = time2acs(info.st_ctime)
-        if ext_tuple[1][1:3]=='sw' or not ext_tuple[1] or ext_tuple[1][-1]=='~':
+        if ext_tuple[1] != ".txt" and ext_tuple[1] != ".py" and ext_tuple[1] != ".pdf" and ext_tuple[1] != ".exe" and ext_tuple[1] != ".c" and ext_tuple[1] != ".cpp" and ext_tuple[1] != ".jpg" and ext_tuple[1] != ".mp3" and ext_tuple[1] != ".mp4" and ext_tuple[1] != ".avi" and ext_tuple[1] != ".doc" and ext_tuple[1] != ".xsl" :
             return fd
-        (num,zero) = calculate(','*7+'Create'+workpath+full_path+name_tuple[1]+','+ext_tuple[1]+
+        (num,zero) = calculate(','*7+'Create'+workpath+send_path+name_tuple[1]+','+ext_tuple[1]+
             str(info.st_uid)+str(atime)+str(mtime)+str(ctime))
-        s.send((str(num)+','+'Create,'+workpath+full_path+','+name_tuple[1]+','+ext_tuple[1]+','+
+        s.send((str(num)+','+'Create,'+workpath+send_path+','+name_tuple[1]+','+ext_tuple[1]+','+
             str(info.st_uid)+','+atime+','+mtime+','+ctime+','+'0'*zero).encode('utf-8'))
         return fd
 #       else:
@@ -204,12 +214,16 @@ class Passthrough(Operations):
 
     def read(self, path, length, offset, fh):
         full_path = self._full_path(path)
+        send_path = _send_path(path)
         os.lseek(fh, offset, os.SEEK_SET)
         ret = os.read(fh, length)
         info = os.fstat(fh)
         atime = time2acs(info.st_atime)
-        (num,zero) = calculate('Read,'+workpath+full_path+','+atime+',')
-        s.send((str(num)+','+'Read,'+workpath+full_path+','+atime+','+'0'*zero).encode('utf-8'))
+        ext_tuple = os.path.splitext(full_path)
+        if ext_tuple[1] != ".txt" and ext_tuple[1] != ".py" and ext_tuple[1] != ".pdf" and ext_tuple[1] != ".exe" and ext_tuple[1] != ".c" and ext_tuple[1] != ".cpp" and ext_tuple[1] != ".jpg" and ext_tuple[1] != ".mp3" and ext_tuple[1] != ".mp4" and ext_tuple[1] != ".avi" and ext_tuple[1] != ".doc" and ext_tuple[1] != ".xsl" :
+            return ret
+        (num,zero) = calculate('Read,'+workpath+send_path+','+atime+',')
+        s.send((str(num)+','+'Read,'+workpath+send_path+','+atime+','+'0'*zero).encode('utf-8'))
         return ret 
 
     def write(self, path, buf, offset, fh):
@@ -236,6 +250,7 @@ def main(mountpoint, root):
     global workpath
     
     workpath = os.getcwd()+'/'
+    print(workpath)
     address = 'GBFS_Socket'
     s = socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
     try :
