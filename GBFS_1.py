@@ -28,7 +28,7 @@ except ImportError:
     print('failed to import fuse')
 
 def calculate(string):
-    l = len(string.encode('utf-8'))
+    l = len(string.encode('UTF-8'))
     num = (l+2) // 100
     zero = (num+1)*100-l-2
     return (num,zero)
