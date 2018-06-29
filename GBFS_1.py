@@ -161,10 +161,13 @@ class Passthrough(Operations):
     def open(self, path, flags):
         # 打开一个文件时，需要使用推荐算法 把预读取的文件放入内存中
         # 如果文件太大，不宜直接放入内存
-        rec = recommand.Recommand()
         full_path = self._full_path(path)
         send_path = _send_path(path)
-        path_list = rec.server(path)
+        try:
+            rec = recommand.Recommand()
+            path_list = rec.server(path)
+        except :
+            pass
         path_str = ",".join(path_list)
         
         t1 = time.clock()

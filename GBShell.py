@@ -45,63 +45,90 @@ class Shell:
             print('input error')
             sys.exit(2)
         for opt, arg in opts:
+
             if opt in ('-s', '--show'):
                 filename = arg
-                print(filename)
-                if args != []:
-                    print('No filename,please give a correct filename')
-                    exit(1)
                 filepath = os.path.abspath(os.curdir) + '/' + filename
-                print(filepath)
-                label = self.matchpath(filepath)
-                if label == []:
-                    print('No label in Neo4j')
+                files = os.listdir()
+                filenum = 1
+                for text in args:
+                    for f in files:
+                        if f == text:
+                            filenum += 1
+                            break
+                if filenum != len(args) + 1:
+                    print('Please only enter filename')
                     exit(1)
-                label = label[0]
-                strlabel = self.getlabel(label)
-                print('Labels:')
-                j = 1
-                for i in strlabel:
-                    print('\t' + str(j) + '.', i)
-                    j += 1
-                print('Properties:')
-                print('\t1. name:  ', label['name'])
-                print('\t2. path:  ', label['path'])
-                print('\t3. ext:   ', label['ext'])
-                print('\t4. ctime: ', label['ctime'])
-                print('\t5. mtime: ', label['mtime'])
-                print('\t6. atime: ', label['atime'])
+                for k in range(filenum):
+                    label = self.matchpath(filepath)
+                    if label == []:
+                        print('No label in Neo4j')
+                        exit(1)
+                    label = label[0]
+                    strlabel = self.getlabel(label)
+                    print('File: ', filename)
+                    print('Labels:')
+                    j = 1
+                    for i in strlabel:
+                        print('\t' + str(j) + '.', i)
+                        j += 1
+                    print('Properties:')
+                    print('\t1. name:  ', label['name'])
+                    print('\t2. path:  ', label['path'])
+                    print('\t3. ext:   ', label['ext'])
+                    print('\t4. ctime: ', label['ctime'])
+                    print('\t5. mtime: ', label['mtime'])
+                    print('\t6. atime: ', label['atime'])
+                    print('\n')
+                    if k == len(args):
+                        break
+                    filename = args[k]
+                    filepath = os.path.abspath(os.curdir) + '/' + filename
 
 
             elif opt in ('-l', '--showlink'):
-                if args != []:
-                    print('No filename,please give a correct filename')
-                    exit(1)
                 filename = arg
                 filepath = os.path.abspath(os.curdir) + '/' + filename
-                nodes = self.matchpath(filepath)
-                if nodes == []:
-                    print('No node in Neo4j')
+                files = os.listdir()
+                filenum = 1
+                for text in args:
+                    for f in files:
+                        if f == text:
+                            filenum += 1
+                            break
+                if filenum != len(args) + 1:
+                    print('Please only enter filename')
                     exit(1)
-                nodes = nodes[0]
-                strlabel = str(nodes)
-                strlabel = strlabel.split(' ')
-                strlabel = strlabel[0].split(':')
-                strlabel = strlabel[1:]
-                for label in strlabel:
-                    print('Relationship:', label)
-                    linknodes = self.matchlabel(label)
-                    j = 1
-                    for node in linknodes:
-                        if node['path'] == filepath:
-                            continue
-                        print('\t', str(j) + '.', 'path: ', node['path'])
-                        j += 1
+                for i in range(filenum):
+                    nodes = self.matchpath(filepath)
+                    if nodes == []:
+                        print('No node in Neo4j')
+                        exit(1)
+                    nodes = nodes[0]
+                    strlabel = str(nodes)
+                    strlabel = strlabel.split(' ')
+                    strlabel = strlabel[0].split(':')
+                    strlabel = strlabel[1:]
+                    print('File: ', filename)
+                    for label in strlabel:
+                        print('Relationship:', label)
+                        linknodes = self.matchlabel(label)
+                        j = 1
+                        for node in linknodes:
+                            if node['path'] == filepath:
+                                continue
+                            print('\t', str(j) + '.', 'path: ', node['path'])
+                            j += 1
+                    print('\n')
+                    if i == len(args):
+                        break
+                    filename = args[i]
+                    filepath = os.path.abspath(os.curdir) + '/' + filename
                 
 
             elif opt in ('-r', '--recommend'):
                 if args != []:
-                    print('too many parameters')
+                    print('Too many parameters')
                     exit(1)
                 filename = arg
                 path = os.path.abspath(os.curdir) + '/' + filename
@@ -111,47 +138,27 @@ class Shell:
 
             elif opt in ('-a', '--add'):
                 if args == []:
-                    print('No label,please give a label')
+                    print('Least one label should be given')
                     exit(1)
                 filename = arg
-                p = arg 
-                filenum = 0
-                while p in os.listdir():
-                    p = args[filenum]
-                    filenum = filenum+1
-                print(filenum)
-                print(args)
-                if filenum > 1 :
-                    node_list = args[filenum-1:]
-                    print(node_list)
-                    dirs = args[0:filenum-2]
-                    dirs.append(arg)
-                    print(dirs)
-                    for node in node_list:
-                        for f in dirs:
-                            filepath = os.path.abspath(os.curdir) + '/' + f
-                            nodes = self.matchpath(filepath)
-                            if nodes == []:
-                                print('No node in Neo4j')
-                                exit(1)
-                            nodes = nodes[0]
-                            for label in node_list:
-                                nodes.add_label(label)
-                                self.graph.push(nodes)
-                                linknodes = self.matchlabel(label)
-                                for node in linknodes:
-                                    if node['path'] == filepath:
-                                        continue
-                                    r = Relationship(nodes, label, node)
-                                    self.graph.create(r)            
-                else:
-                    filepath = os.path.abspath(os.curdir) + '/' + filename
+                filepath = os.path.abspath(os.curdir) + '/' + filename
+                files = os.listdir()
+                filenum = 1
+                for test in args:
+                    for f in files:
+                        if f == test:
+                            filenum += 1
+                            break
+                labels = args[filenum - 1:]
+                for i in range(filenum):
                     nodes = self.matchpath(filepath)
                     if nodes == []:
                         print('No node in Neo4j')
                         exit(1)
                     nodes = nodes[0]
-                    for label in args:
+                    for label in labels:
+                        if nodes.has_label(label):
+                            break
                         nodes.add_label(label)
                         self.graph.push(nodes)
                         linknodes = self.matchlabel(label)
@@ -160,6 +167,8 @@ class Shell:
                                 continue
                             r = Relationship(nodes, label, node)
                             self.graph.create(r)
+                    filename = args[i]
+                    filepath = os.path.abspath(os.curdir) + '/' + filename
                 print('Label add successfully!')
 
 
@@ -241,22 +250,36 @@ class Shell:
                 print('''Usage： ./GBShell.py  [OPTION]...  [FILE]...  [LABEL/KEY:value]\n
 Description：a command line ，users can operate on this to controll the whole GBFS.\n
 \t-a, --add\n
-​\t\tAdd a label [LABEL] in the given file [FILE]\n
+​\t\tAdd a label [LABEL] or a few labels [LABEL1]...[LABELn] in the given file [FILE].\n
+\t\tInput sample:\n
+\t\t-a [FILE] [LABEL1] [LABEL2] ... [LABELn]\n
+​\t-s, --show\n
+​\t\tGive a file [FILE] or a few files [FILE1]...[FILEn],\n
+\t\tPrint all the labels and proporties.\n 
+\t\tInput sample:\n
+\t\t-s [FILE1] [FILE2]...[FILEn]\n
 \t-d, --delete\n
-​\t\tDelete the label [LABEL] in the given file [FILE].If the given file doesn't have that\n
-\t\tlabel,deleting is invaild,and return a warning signal.\n
+​\t\tDelete a label [LABEL] or some labels [LABEL1]...[LABELn] in the given file [FILE].\n
+\t\tIf the given file doesn't have [LABEL],deleting is invaild,and return a warning signal.\n
+\t\tInput sample:\n
+\t\t-d [FILE] [LABEL1] [LABEL2] ... [LABELn]\n
 ​\t-f, --find\n
 ​\t\tUser gives shell the labels [LABEL] or the proporties [KEY:value],and all the nodes\n
 \t\tthat have the given labels or proporties are printed in the screen.If none node\n
 \t\tmeets the requirements,Not Found will be returned.\n
-\t-h, --help\n
-​\t\tShow the help info.\n
+\t\tInput sample:\n
+\t\t-f [LABEL1] [LABEL2] [KEY1:value1] [LABEL3] [key2:value2]\n
 \t-l, --showlink\n
-​\t\tPrint all the files(nodes) that are adjacent to the given file[FILE].\n
+​\t\tPrint all the files(nodes) that are adjacent to the given file [FILE].\n
+\t\tInput sample:\n
+\t\t-l [FILE1] [FILE2]...[FILEn]\n
 ​\t-r, --rec\n
-​\t\tRecommend.\n
-​\t-s, --show\n
-​\t\tPrint all the labels and proporties of the given file [FILE].\n ''')
+​\t\tRecommend a few files which may have relation with the given flie [FILE].\n
+​\t\tYou can choose the file you want to open.\n
+\t\tInput sample:\n
+\t\t-r [FILE]\n
+\t-h, --help\n
+​\t\tShow the help info.\n''')
 
 if __name__ == '__main__':
     sh = Shell()
