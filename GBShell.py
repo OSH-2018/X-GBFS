@@ -47,16 +47,26 @@ class Shell:
                 for text in args:
                     for f in files:
                         if f == text:
+                            if os.path.isdir(f):
+                                break
                             filenum += 1
                             break
-                if filenum != len(args) + 1:
-                    print('Please only enter filename')
-                    exit(1)
-                for k in range(filenum):
+                dirflag = 0
+                k = 0
+                if os.path.isdir(arg):
+                    files = os.listdir(arg)
+                    if files == []:
+                        break
+                    filenum = len(files)
+                    print(filenum)
+                    dirflag = 1
+                    filepath = filepath + '/' + files[k]
+                    print(files)
+                while k < filenum:
                     label = self.matchpath(filepath)
                     if label == []:
                         print('No label in Neo4j')
-                        exit(1)
+                        continue
                     label = label[0]
                     strlabel = str(label.labels)
                     strlabel = strlabel.split(':')
@@ -75,10 +85,17 @@ class Shell:
                     print('\t5. mtime: ', label['mtime'])
                     print('\t6. atime: ', label['atime'])
                     print('\n')
-                    if k == len(args):
-                        break
-                    filename = args[k]
-                    filepath = os.path.abspath(os.curdir) + '/' + filename
+                    if dirflag:
+                        if k + 1 == len(files):
+                            break
+                        filename = files[k + 1]
+                        filepath = os.path.abspath(os.curdir) + '/' + arg + '/' + filename
+                    else:
+                        if k == len(args):
+                            break
+                        filename = args[k]
+                        filepath = os.path.abspath(os.curdir) + '/' + filename
+                    k += 1
 
 
             elif opt in ('-l', '--showlink'):
@@ -89,16 +106,26 @@ class Shell:
                 for text in args:
                     for f in files:
                         if f == text:
+                            if os.path.isdir(f):
+                                break
                             filenum += 1
                             break
-                if filenum != len(args) + 1:
-                    print('Please only enter filename')
-                    exit(1)
-                for i in range(filenum):
+                dirflag = 0
+                i = 0
+                if os.path.isdir(arg):
+                    files = os.listdir(arg)
+                    if files == []:
+                        break
+                    filenum = len(files)
+                    print(filenum)
+                    dirflag = 1
+                    filepath = filepath + '/' + files[i]
+                    print(files)
+                while i < filenum:
                     nodes = self.matchpath(filepath)
                     if nodes == []:
                         print('No node in Neo4j')
-                        exit(1)
+                        continue
                     nodes = nodes[0]
                     strlabel = str(nodes.labels)
                     strlabel = strlabel.split(':')
@@ -114,10 +141,17 @@ class Shell:
                             print('\t', str(j) + '.', 'path: ', node['path'])
                             j += 1
                     print('\n')
-                    if i == len(args):
-                        break
-                    filename = args[i]
-                    filepath = os.path.abspath(os.curdir) + '/' + filename
+                    if dirflag:
+                        if i + 1 == len(files):
+                            break
+                        filename = files[i + 1]
+                        filepath = os.path.abspath(os.curdir) + '/' + arg + '/' + filename
+                    else:
+                        if i == len(args):
+                            break
+                        filename = args[i]
+                        filepath = os.path.abspath(os.curdir) + '/' + filename
+                    i += 1
                 
 
             elif opt in ('-r', '--recommend'):
@@ -141,14 +175,27 @@ class Shell:
                 for test in args:
                     for f in files:
                         if f == test:
+                            if os.path.isdir(f):
+                                break
                             filenum += 1
                             break
                 labels = args[filenum - 1:]
-                for i in range(filenum):
+                dirflag = 0
+                i = 0
+                if os.path.isdir(arg):
+                    files = os.listdir(arg)
+                    if files == []:
+                        break
+                    filenum = len(files)
+                    print(filenum)
+                    dirflag = 1
+                    filepath = filepath + '/' + files[i]
+                    print(files)
+                while i < filenum:
                     nodes = self.matchpath(filepath)
                     if nodes == []:
                         print('No node in Neo4j')
-                        exit(1)
+                        continue
                     nodes = nodes[0]
                     for label in labels:
                         if nodes.has_label(label):
@@ -162,8 +209,15 @@ class Shell:
                             r = Relationship(nodes, label, node)
                             r['weight'] = 1
                             self.graph.create(r)
-                    filename = args[i]
-                    filepath = os.path.abspath(os.curdir) + '/' + filename
+                    if dirflag:
+                        if i + 1 == len(files):
+                            break
+                        filename = files[i + 1]
+                        filepath = os.path.abspath(os.curdir) + '/' + arg + '/' + filename
+                    else:
+                        filename = args[i]
+                        filepath = os.path.abspath(os.curdir) + '/' + filename
+                    i += 1
                 print('Label add successfully!')
 
 
@@ -178,14 +232,27 @@ class Shell:
                 for text in args:
                     for f in files:
                         if f == text:
+                            if os.path.isdir(f):
+                                break
                             filenum += 1
                             break
                 labels = args[filenum - 1:]
-                for i in range(filenum):
+                dirflag = 0
+                i = 0
+                if os.path.isdir(arg):
+                    files = os.listdir(arg)
+                    if files == []:
+                        break
+                    filenum = len(files)
+                    print(filenum)
+                    dirflag = 1
+                    filepath = filepath + '/' + files[i]
+                    print(files)
+                while i < filenum:
                     nodes = self.matchpath(filepath)
                     if nodes == []:
                         print('No node in Neo4j')
-                        exit(1)
+                        continue
                     nodes = nodes[0]
                     for label in labels:
                         print('label: ', label)
@@ -194,10 +261,18 @@ class Shell:
                         rels = self.matchrel(nodes, label)
                         for rel in rels:
                             self.graph.separate(rel)
-                    if i == len(args):
-                        break
-                    filename = args[i]
-                    filepath = os.path.abspath(os.curdir) + '/' + filename
+                    if dirflag:
+                        if i + 1 == len(files):
+                            break
+                        filename = files[i + 1]
+                        filepath = os.path.abspath(os.curdir) + '/' + arg + '/' + filename
+                    else:
+                        if i == len(args):
+                            break
+                        filename = args[i]
+                        filepath = os.path.abspath(os.curdir) + '/' + filename
+                    print(i, filenum)
+                    i += 1
                 print('Label delete successfully! (if it exists)')
 
 
@@ -240,7 +315,7 @@ class Shell:
                 else:
                     j = 0
                     for node in nodes:
-                        print(str(j + 1) + '.', 'name:', node['name'], '  path:', node['path'])
+                        print(str(j + 1) + ':', '\tname:', node['name'], '\tpath:', node['path'])
                         j += 1
 
 
