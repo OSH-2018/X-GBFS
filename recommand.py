@@ -48,10 +48,10 @@ class Recommand:
     def shell(self, filepath=None):
         input_node = self.matchpath(filepath)
         input_node = input_node[0]
-        strlabel = str(input_node)
-        strlabel = strlabel.split(' ')
-        strlabel = strlabel[0].split(':')
-        strlabel = strlabel[1:]
+        labels = input_node.labels
+        labels = str(labels)
+        labels = labels.split(':')
+        strlabel = labels[1:]
         relation_list = []
         for label in strlabel:
             rel_list = self.matchrel(input_node, label)
@@ -108,7 +108,7 @@ class Recommand:
         index_list = []
         while n > 0:
             index_ = weight_list.index(max(weight_list))
-            index_list.append(index)
+            index_list.append(index_)
             weight_list[index_] = 0
             n = n - 1
         m = 0
@@ -125,20 +125,22 @@ class Recommand:
             Neighbor_node0 = Neighbor_nodes[0]
             Neighbor_node1 = Neighbor_nodes[1]
             if Neighbor_node0 == input_node:
-                Neighbor_list.append(str(Neighbor_node1))
+                Neighbor_list.append(Neighbor_node1)
             else:
-                Neighbor_list.append(str(Neighbor_node0))
+                Neighbor_list.append(Neighbor_node0)
         i = 1
         print("GBFS file recommand service: ")
         for Neighbor_node in Neighbor_list:
             # print(i,':',Neighbor_node)
             # 为了测试方便，决定多输出一个数据————即每个文件对应关系的权值
             # print(i, ':', Neighbor_node,',','its weight is:', Neighbor_node['weight'])
-            print(i, ':', Neighbor_node,',','its weight is:', weight_list_2[index(Neighbor_list.index(Neighbor_node))])
+            print(i, ':', Neighbor_node['name'], '\tweight:', weight_list_2[Neighbor_list.index(Neighbor_node)], '\tpath:', Neighbor_node['path'])
+            i += 1
 
-            print("-1 : 留在当前工作目录。")
-        print("\nPlease select the file: ")
-        index =int(input())-1 #将输入转换为list下标
+        print("0 : 留在当前工作目录。")
+        index = input("\nPlease select the file: ")
+
+        index =int(index)-1 #将输入转换为list下标
         # 接下来两个操作：
         # 1：更新权值weight
         # 注意：选中的关系的权值需要更新，与该权值端点相同的关系的权值也要更新·
@@ -158,12 +160,15 @@ class Recommand:
                         self.weightdecrease(ll)
                     else:
                         continue
+            i += 1
         # 2: 根据用户输入进入新的工作目录
         # 需要给用户选择留在当前工作目录还是跳转到新的工作目录的机会
         if index == 4 or index == 3 or index == 2 or index == 1 or index == 0:
             print("your selection: ")
-            print(Neighbor_list[index])
+            node = Neighbor_list[index]
+            print(node['path'])
             target_node_str = Neighbor_list[index]
+            target_node_str = str(target_node_str)
             target_node_str = target_node_str.split(' ')
             target_node_str = target_node_str[1:]
             for split_parts in target_node_str:
@@ -172,6 +177,8 @@ class Recommand:
             target_path = target_path.split('\'')# 使用转义字符 注意
             target_path =  target_path[1]
             #os.getcwd# 获取当前工作目录
+            filenamelen = len(node['name'])
+            target_path = target_path[:-filenamelen]
             os.chdir(target_path)# 转到了目标目录
         elif index == -1:
             print("留在当前工作目录。")

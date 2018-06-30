@@ -1,5 +1,5 @@
 import sys, getopt, os
-from py2neo import Node, Graph, NodeMatcher, Relationship, RelationshipMatcher
+from py2neo import Graph, NodeMatcher, Relationship, RelationshipMatcher
 from recommand import Recommand
 
 class Shell:
@@ -128,7 +128,7 @@ class Shell:
                 path = os.path.abspath(os.curdir) + '/' + filename
                 rc = Recommand()
                 rc.shell(filepath=path)
-                print('recommend')
+                print('Recommend finish!')
 
             elif opt in ('-a', '--add'):
                 if args == []:
@@ -160,6 +160,7 @@ class Shell:
                             if node['path'] == filepath:
                                 continue
                             r = Relationship(nodes, label, node)
+                            r['weight'] = 1
                             self.graph.create(r)
                     filename = args[i]
                     filepath = os.path.abspath(os.curdir) + '/' + filename
@@ -193,6 +194,8 @@ class Shell:
                         rels = self.matchrel(nodes, label)
                         for rel in rels:
                             self.graph.separate(rel)
+                    if i == len(args):
+                        break
                     filename = args[i]
                     filepath = os.path.abspath(os.curdir) + '/' + filename
                 print('Label delete successfully! (if it exists)')
