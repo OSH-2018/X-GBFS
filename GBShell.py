@@ -380,7 +380,7 @@ class Shell:
                 else:
                     j = 0
                     for node in nodes:
-                        print(str(j + 1) + ':', '\tname:', node['name'], '\tpath:', node['path'])
+                        print('\t' + str(j + 1) + '.', 'name:', node['name'], '\tpath:', node['path'])
                         j += 1
                 index = input('Please select the file to open: ')
                 try:
