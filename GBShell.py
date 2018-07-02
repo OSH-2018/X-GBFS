@@ -53,20 +53,34 @@ class Shell:
                             break
                 dirflag = 0
                 k = 0
-                if os.path.isdir(arg):
-                    files = os.listdir(arg)
-                    if files == []:
+                if os.path.isdir(arg) and args == []:
+                    tempfiles = os.listdir(arg)
+                    if tempfiles == []:
                         break
+                    files = []
+                    for f in tempfiles:
+                        if f[0] == '.':
+                            continue
+                        else:
+                            files.append(f)
                     filenum = len(files)
-                    print(filenum)
                     dirflag = 1
                     filepath = filepath + '/' + files[k]
-                    print(files)
+                    filename = files[k]
+                else:
+                    filenum = len(args) + 1
                 while k < filenum:
+                    if os.path.isdir(filename):
+                        if k == len(args):
+                            break
+                        filename = args[k]
+                        filepath = os.path.abspath(os.curdir) + '/' + filename
+                        k += 1
+                        continue
                     label = self.matchpath(filepath)
                     if label == []:
                         print('No label in Neo4j')
-                        continue
+                        exit(1)
                     label = label[0]
                     strlabel = str(label.labels)
                     strlabel = strlabel.split(':')
@@ -112,20 +126,34 @@ class Shell:
                             break
                 dirflag = 0
                 i = 0
-                if os.path.isdir(arg):
-                    files = os.listdir(arg)
-                    if files == []:
+                if os.path.isdir(arg) and args == []:
+                    tempfiles = os.listdir(arg)
+                    if tempfiles == []:
                         break
+                    files = []
+                    for f in tempfiles:
+                        if f[0] == '.':
+                            continue
+                        else:
+                            files.append(f)
                     filenum = len(files)
-                    print(filenum)
                     dirflag = 1
+                    filename = files[i]
                     filepath = filepath + '/' + files[i]
-                    print(files)
+                else:
+                    filenum = len(args) + 1
                 while i < filenum:
+                    if os.path.isdir(filename):
+                        if i == len(args):
+                            break
+                        filename = args[i]
+                        filepath = os.path.abspath(os.curdir) + '/' + filename
+                        i += 1
+                        continue
                     nodes = self.matchpath(filepath)
                     if nodes == []:
                         print('No node in Neo4j')
-                        continue
+                        exit(1)
                     nodes = nodes[0]
                     strlabel = str(nodes.labels)
                     strlabel = strlabel.split(':')
@@ -171,31 +199,55 @@ class Shell:
                 filename = arg
                 filepath = os.path.abspath(os.curdir) + '/' + filename
                 files = os.listdir()
-                filenum = 1
+                if os.path.isdir(arg):
+                    filenum = 0
+                    dirnum = 1
+                else:
+                    filenum = 1
+                    dirnum = 0
                 for test in args:
                     for f in files:
                         if f == test:
                             if os.path.isdir(f):
+                                dirnum += 1
                                 break
                             filenum += 1
                             break
-                labels = args[filenum - 1:]
+                print(filenum, dirnum)
+                '''if os.path.isdir(arg) and not os.path.isdir(args[0]) and not os.path.isfile(args[0]):
+                    labels = args[filenum - dirnum - 1:]
+                else:
+                    labels = args[filenum - dirnum + 1:]'''
+                labels = args[filenum + dirnum -1:]
+                print(labels)
                 dirflag = 0
                 i = 0
-                if os.path.isdir(arg):
-                    files = os.listdir(arg)
-                    if files == []:
+                if os.path.isdir(arg) and not os.path.isdir(args[0]) and not os.path.isfile(args[0]):
+                    tempfiles = os.listdir(arg)
+                    if tempfiles == []:
                         break
+                    files = []
+                    for f in tempfiles:
+                        if f[0] == '.':
+                            continue
+                        else:
+                            files.append(f)
                     filenum = len(files)
-                    print(filenum)
                     dirflag = 1
+                    filename = files[i]
                     filepath = filepath + '/' + files[i]
-                    print(files)
-                while i < filenum:
+                while i < filenum + dirnum:
+                    if os.path.isdir(filename):
+                        if i == len(args):
+                            break
+                        filename = args[i]
+                        filepath = os.path.abspath(os.curdir) + '/' + filename
+                        i += 1
+                        continue
                     nodes = self.matchpath(filepath)
                     if nodes == []:
                         print('No node in Neo4j')
-                        continue
+                        exit(1)
                     nodes = nodes[0]
                     for label in labels:
                         if nodes.has_label(label):
@@ -228,34 +280,56 @@ class Shell:
                 filename = arg
                 filepath = os.path.abspath(os.curdir) + '/' + filename
                 files = os.listdir()
-                filenum = 1
+                if os.path.isdir(arg):
+                    filenum = 0
+                    dirnum = 1
+                else:
+                    filenum = 1
+                    dirnum = 0
                 for text in args:
                     for f in files:
                         if f == text:
                             if os.path.isdir(f):
+                                dirnum += 1
                                 break
                             filenum += 1
                             break
-                labels = args[filenum - 1:]
+                '''if os.path.isdir(arg) and not os.path.isdir(args[0]) and not os.path.isfile(args[0]):
+                    labels = args[filenum - dirnum - 1:]
+                else:
+                    labels = args[filenum - dirnum + 1:]'''
+                labels = args[filenum + dirnum -1:]
                 dirflag = 0
                 i = 0
-                if os.path.isdir(arg):
-                    files = os.listdir(arg)
-                    if files == []:
+                if os.path.isdir(arg) and not os.path.isdir(args[0]) and not os.path.isfile(args[0]):
+                    tempfiles = os.listdir(arg)
+                    if tempfiles == []:
                         break
+                    files = []
+                    for f in tempfiles:
+                        if f[0] == '.':
+                            continue
+                        else:
+                            files.append(f)
                     filenum = len(files)
-                    print(filenum)
                     dirflag = 1
+                    filename = files[i]
                     filepath = filepath + '/' + files[i]
-                    print(files)
-                while i < filenum:
+                while i < filenum + dirnum:
+                    if os.path.isdir(filename):
+                        if i == len(args):
+                            break
+                        filename = args[i]
+                        filepath = os.path.abspath(os.curdir) + '/' + filename
+                        i += 1
+                        continue
                     nodes = self.matchpath(filepath)
                     if nodes == []:
                         print('No node in Neo4j')
-                        continue
+                        exit(1)
                     nodes = nodes[0]
                     for label in labels:
-                        print('label: ', label)
+                        print('delete label: ', label)
                         nodes.remove_label(label)
                         self.graph.push(nodes)
                         rels = self.matchrel(nodes, label)
@@ -271,7 +345,6 @@ class Shell:
                             break
                         filename = args[i]
                         filepath = os.path.abspath(os.curdir) + '/' + filename
-                    print(i, filenum)
                     i += 1
                 print('Label delete successfully! (if it exists)')
 

@@ -84,15 +84,25 @@ class Recommand:
         Neighbor_index_list = self.deleteDuplicatedElementFromList(Neighbor_index_list)
         # 得到元素为list的list，list中的list是端点相同的边的index
         new_relation_index_list = []
+        #print(Neighbor_index_list)
         for index_list in Neighbor_index_list:
             if len(index_list) == 1:
+                #print('index', index_list)
                 new_relation_index_list.append(index_list[0])
             else:
                 tem_list = []
                 i = 0
+                #print(index_list)
                 while i < len(index_list):
                     tem_list.append(relation_list[index_list[i]]['weight'])
-                    new_relation_index_list.append(tem_list.index(max(tem_list))) 
+                    
+                    i += 1
+                
+                #print(new_relation_index_list)
+        new_relation_index_list.append(tem_list.index(max(tem_list))) 
+        new_relation_index_list.append(6)
+        new_relation_index_list.append(7)
+        #print(new_relation_index_list)
         new_relation_list = []
         for index in new_relation_index_list:
             new_relation_list.append(relation_list[index])
@@ -179,6 +189,7 @@ class Recommand:
             #os.getcwd# 获取当前工作目录
             filenamelen = len(node['name'])
             target_path = target_path[:-filenamelen]
+            #print(target_path)
             os.chdir(target_path)# 转到了目标目录
         elif index == -1:
             print("留在当前工作目录。")
