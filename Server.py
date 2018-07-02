@@ -196,7 +196,7 @@ if __name__ == '__main__':
     s.bind(HOST)
     s.listen(2)
     
-    print('Server start at: %s:' %HOST)
+    print('Server start at: %s' %HOST)
     print('wait for connection...')
     
     filedict = {'initfile':'', 'file1':'', 'file2':'', 'file3':'', 'time':1529125142.0}

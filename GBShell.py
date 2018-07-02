@@ -35,7 +35,7 @@ class Shell:
         try:
             opts, args = getopt.getopt(argv,'-h-s:-l:-r:-a:-d:-f:',['help','show=','showlink=','rec=','add=','delete=','find='])
         except getopt.GetoptError:
-            print('input error')
+            print('Parameter input error, \'python GBShell.py -h\' look for help')
             sys.exit(2)
         for opt, arg in opts:
 
@@ -214,10 +214,6 @@ class Shell:
                             filenum += 1
                             break
                 print(filenum, dirnum)
-                '''if os.path.isdir(arg) and not os.path.isdir(args[0]) and not os.path.isfile(args[0]):
-                    labels = args[filenum - dirnum - 1:]
-                else:
-                    labels = args[filenum - dirnum + 1:]'''
                 labels = args[filenum + dirnum -1:]
                 print(labels)
                 dirflag = 0
@@ -270,12 +266,12 @@ class Shell:
                         filename = args[i]
                         filepath = os.path.abspath(os.curdir) + '/' + filename
                     i += 1
-                print('Label add successfully!')
+                print('Label added successfully!')
 
 
             elif opt in ('-d', '--delete'):    
                 if args == []:
-                    print('No label, please give a label')
+                    print('Least one label should be given')
                     exit(1)
                 filename = arg
                 filepath = os.path.abspath(os.curdir) + '/' + filename
@@ -294,10 +290,6 @@ class Shell:
                                 break
                             filenum += 1
                             break
-                '''if os.path.isdir(arg) and not os.path.isdir(args[0]) and not os.path.isfile(args[0]):
-                    labels = args[filenum - dirnum - 1:]
-                else:
-                    labels = args[filenum - dirnum + 1:]'''
                 labels = args[filenum + dirnum -1:]
                 dirflag = 0
                 i = 0
@@ -346,7 +338,7 @@ class Shell:
                         filename = args[i]
                         filepath = os.path.abspath(os.curdir) + '/' + filename
                     i += 1
-                print('Label delete successfully! (if it exists)')
+                print('Label deleted successfully! (if it exists)')
 
 
             elif opt in ('-f', '--find'):
@@ -390,6 +382,11 @@ class Shell:
                     for node in nodes:
                         print(str(j + 1) + ':', '\tname:', node['name'], '\tpath:', node['path'])
                         j += 1
+                index = input('Please select the file to open: ')
+                try:
+                    os.system('open ' + nodes[int(index) - 1]['path'])
+                except:
+                    print('No such file')
 
 
                 

@@ -56,6 +56,7 @@ class Recommand:
         for label in strlabel:
             rel_list = self.matchrel(input_node, label)
             relation_list.extend(rel_list)# 所有的关系
+        
         # 此处有陷阱：因为这里得到的所有关系是根据label检索的，
         # 然而一个文件节点可以拥有多个label，意味着这里得到的
         # 关系可能是有相同的端点，导致我们推荐算法中有相同的文
@@ -84,25 +85,14 @@ class Recommand:
         Neighbor_index_list = self.deleteDuplicatedElementFromList(Neighbor_index_list)
         # 得到元素为list的list，list中的list是端点相同的边的index
         new_relation_index_list = []
-        #print(Neighbor_index_list)
         for index_list in Neighbor_index_list:
             if len(index_list) == 1:
-                #print('index', index_list)
                 new_relation_index_list.append(index_list[0])
             else:
                 tem_list = []
-                i = 0
-                #print(index_list)
-                while i < len(index_list):
-                    tem_list.append(relation_list[index_list[i]]['weight'])
-                    
-                    i += 1
-                
-                #print(new_relation_index_list)
-        new_relation_index_list.append(tem_list.index(max(tem_list))) 
-        new_relation_index_list.append(6)
-        new_relation_index_list.append(7)
-        #print(new_relation_index_list)
+                for index in index_list:
+                    tem_list.append(relation_list[index]['weight'])
+                new_relation_index_list.append(index_list[tem_list.index(max(tem_list))]) 
         new_relation_list = []
         for index in new_relation_index_list:
             new_relation_list.append(relation_list[index])
@@ -147,13 +137,28 @@ class Recommand:
             print(i, ':', Neighbor_node['name'], '\tweight:', weight_list_2[Neighbor_list.index(Neighbor_node)], '\tpath:', Neighbor_node['path'])
             i += 1
 
-        print("0 : 留在当前工作目录。")
+        print("0 : Stay in current path")
         index = input("\nPlease select the file: ")
 
         index =int(index)-1 #将输入转换为list下标
         # 接下来两个操作：
         # 1：更新权值weight
         # 注意：选中的关系的权值需要更新，与该权值端点相同的关系的权值也要更新·
+        
+        # 2: 根据用户输入进入新的工作目录
+        # 需要给用户选择留在当前工作目录还是跳转到新的工作目录的机会
+        if index == 4 or index == 3 or index == 2 or index == 1 or index == 0:
+            node = Neighbor_list[index]
+            print("your selection:", node['name'])
+            try:
+                os.system('open ' + node['path'])
+            except:
+                print('Wrong path')
+        elif index == -1:
+            print("Stay in current path")
+        else:
+            print("Wrong input")
+        
         i = 0
         while i < rel_num:
             if i == index:
@@ -171,30 +176,6 @@ class Recommand:
                     else:
                         continue
             i += 1
-        # 2: 根据用户输入进入新的工作目录
-        # 需要给用户选择留在当前工作目录还是跳转到新的工作目录的机会
-        if index == 4 or index == 3 or index == 2 or index == 1 or index == 0:
-            print("your selection: ")
-            node = Neighbor_list[index]
-            print(node['path'])
-            target_node_str = Neighbor_list[index]
-            target_node_str = str(target_node_str)
-            target_node_str = target_node_str.split(' ')
-            target_node_str = target_node_str[1:]
-            for split_parts in target_node_str:
-                if split_parts == 'path:':
-                    target_path = target_node_str[target_node_str.index('path:')+1]
-            target_path = target_path.split('\'')# 使用转义字符 注意
-            target_path =  target_path[1]
-            #os.getcwd# 获取当前工作目录
-            filenamelen = len(node['name'])
-            target_path = target_path[:-filenamelen]
-            #print(target_path)
-            os.chdir(target_path)# 转到了目标目录
-        elif index == -1:
-            print("留在当前工作目录。")
-        else:
-            print("Wang input: 输入的不是一个正确的选项！")
     
     
     
@@ -231,10 +212,9 @@ class Recommand:
                 new_relation_index_list.append(index_list[0])
             else:
                 tem_list = []
-                i = 0
-                while i < len(index_list):
-                    tem_list.append(relation_list[index_list[i]]['weight'])
-                    new_relation_index_list.append(tem_list.index(max(tem_list))) 
+                for index in index_list:
+                    tem_list.append(relation_list[index]['weight'])
+                new_relation_index_list.append(index_list[tem_list.index(max(tem_list))]) 
         new_relation_list = []
         for index in new_relation_index_list:
             new_relation_list.append(relation_list[index])
